@@ -18,27 +18,34 @@ if ($createX) {
         return
     }
 
-    # Shrink ổ được chọn
-    Resize-Partition -DriveLetter $sourceDrive -Size ($partition.Size - 6144MB)
+    # Kiểm tra dung lượng trước khi shrink
+    $requiredSize = 6144MB
+    $availableSize = $partition.Size - $partition.SizeNeededForShrink
+    
+    if ($availableSize -lt $requiredSize) {
+        Write-Host "⚠️ Không đủ dung lượng trống để tạo ổ X (cần $($requiredSize/1MB) MB, chỉ có $($availableSize/1MB) MB khả dụng)"
+        $createX = $false
+    } else {
+        try {
+            # Shrink ổ được chọn
+            Resize-Partition -DriveLetter $sourceDrive -Size ($partition.Size - $requiredSize) -ErrorAction Stop
 
-    # Tạo phân vùng mới và gán ký tự X
-    $diskList = Get-Disk
-    $disk = $null
-    foreach ($d in $diskList) {
-        if ($d.Number -eq $partition.DiskNumber) {
-            $disk = $d
-            break
+            # Tạo phân vùng mới và gán ký tự X
+            $disk = Get-Disk -Number $partition.DiskNumber -ErrorAction SilentlyContinue
+            if (-not $disk) {
+                Write-Host "❌ Không xác định được ổ đĩa vật lý để tạo phân vùng."
+                Pause
+                return
+            }
+
+            $newPartition = New-Partition -DiskNumber $disk.Number -Size $requiredSize -DriveLetter X -ErrorAction Stop
+            Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false -ErrorAction Stop
+            Write-Host "✅ Đã tạo thành công ổ X với dung lượng $($requiredSize/1MB) MB"
+        } catch {
+            Write-Host "❌ Không thể tạo ổ X: $_"
+            $createX = $false
         }
     }
-
-    if (-not $disk) {
-        Write-Host "❌ Không xác định được ổ đĩa vật lý để tạo phân vùng."
-        Pause
-        return
-    }
-
-    $newPartition = New-Partition -DiskNumber $disk.Number -Size 6144MB -DriveLetter X
-    Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false
 }
 
 # Bước 3: Hỏi đường dẫn file ISO
@@ -87,11 +94,16 @@ try {
     # Kiểm tra ổ X đã tồn tại chưa
     $volX = Get-Volume -DriveLetter X -ErrorAction SilentlyContinue
     if ($volX) {
-        Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false
-        Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
-        bcdboot X:\windows
-        bcdedit /set "{current}" bootmenupolicy legacy
-        Write-Host "✅ Hoàn tất cài đặt WinPE vào ổ X."
+        # Format lại ổ X nếu cần
+        try {
+            Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false -ErrorAction Stop
+            Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
+            bcdboot X:\windows
+            bcdedit /set "{current}" bootmenupolicy legacy
+            Write-Host "✅ Hoàn tất cài đặt WinPE vào ổ X."
+        } catch {
+            Write-Host "❌ Lỗi khi cài đặt WinPE vào ổ X: $_"
+        }
     } else {
         Write-Host "⚠️ Không tìm thấy ổ X để cài WinPE. Bạn cần tạo hoặc gán ổ X trước."
     }
@@ -102,4 +114,5 @@ try {
 catch {
     Write-Host "❌ Đã xảy ra lỗi: $_"
     Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
+    Pause
 }
