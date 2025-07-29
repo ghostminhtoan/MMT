@@ -1,0 +1,88 @@
+@echo off
+color 0A
+title File Extension Manager
+setlocal enabledelayedexpansion
+
+:MAIN_MENU
+cls
+echo ============================================
+echo    FILE EXTENSION MANAGER (Admin Required)  
+echo ============================================
+echo.
+echo [1] Associate File Extension with a Program
+echo [2] Unassociate File Extension (FULL - Remove Icon)
+echo [3] Exit
+echo.
+set /p "choice=Select Option (1/2/3): "
+
+if "!choice!"=="1" (
+    goto ASSOCIATE
+) else if "!choice!"=="2" (
+    goto UNASSOCIATE
+) else if "!choice!"=="3" (
+    exit
+) else (
+    echo Invalid choice! Try again.
+    timeout /t 2 >nul
+    goto MAIN_MENU
+)
+
+:ASSOCIATE
+cls
+echo [ASSOCIATE FILE EXTENSION]
+echo --------------------------
+echo.
+:AskExtension
+set /p "file_ext=Enter File Extension (e.g., .url, .xlsx, .docx): "
+if "!file_ext!"=="" (
+    echo Extension cannot be empty!
+    goto AskExtension
+)
+
+:AskProgramPath
+set /p "prog_path=Enter Program Path (e.g., ""C:\Program Files\...\app.exe""): "
+if "!prog_path!"=="" (
+    echo Program path cannot be empty!
+    goto AskProgramPath
+)
+
+echo.
+echo Confirm: Associate [!file_ext!] with [!prog_path!]?
+choice /c YN /m "Continue (Y/N)?"
+if errorlevel 2 goto MAIN_MENU
+
+reg add "HKEY_CLASSES_ROOT\!file_ext!" /ve /d "CustomFile!file_ext!" /f >nul 2>&1
+reg add "HKEY_CLASSES_ROOT\CustomFile!file_ext!\DefaultIcon" /ve /d "\"!prog_path!\",0" /f >nul 2>&1
+reg add "HKEY_CLASSES_ROOT\CustomFile!file_ext!\shell\open\command" /ve /d "\"!prog_path!\" \"%%1\"" /f >nul 2>&1
+
+echo.
+echo ✅ Success: [!file_ext!] is now associated with [!prog_path!].
+echo NOTE: You might need to restart Explorer to see icon changes.
+pause
+goto MAIN_MENU
+
+:UNASSOCIATE
+cls
+echo [UNASSOCIATE FILE EXTENSION]
+echo ----------------------------
+echo.
+set /p "file_ext=Enter File Extension to Remove (e.g., .url): "
+if "!file_ext!"=="" (
+    echo Extension cannot be empty!
+    pause
+    goto UNASSOCIATE
+)
+
+echo.
+echo Confirm: Remove ALL association and icon for [!file_ext!]?
+choice /c YN /m "Continue (Y/N)?"
+if errorlevel 2 goto MAIN_MENU
+
+reg delete "HKEY_CLASSES_ROOT\!file_ext!" /f >nul 2>&1
+reg delete "HKEY_CLASSES_ROOT\CustomFile!file_ext!" /f >nul 2>&1
+
+echo.
+echo ✅ Success: [!file_ext!] association and icon have been removed.
+echo NOTE: Restart Explorer or PC to see changes.
+pause
+goto MAIN_MENU
