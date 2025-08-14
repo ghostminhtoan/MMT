@@ -49,7 +49,8 @@ echo %back_option%
 echo -------------------------------
 echo %drive_prompt%
 echo -------------------------------
-wmic logicaldisk get caption
+:: Sử dụng diskpart thay cho wmic trong WinPE
+echo list volume | diskpart
 echo -------------------------------
 set /p selected_drive="Drive/O cung: "
 
@@ -86,7 +87,12 @@ if /i "%confirm_answer%"=="z" goto FORMAT_PROMPT
 if /i "%confirm_answer%"=="n" goto FORMAT_PROMPT
 if /i "%confirm_answer%"=="y" (
     echo %formatting%
-    format %selected_drive%: /FS:NTFS /Q /Y > nul
+    :: Sử dụng diskpart để format trong WinPE
+    (
+        echo select volume %selected_drive%
+        echo format fs=ntfs quick
+        echo exit
+    ) | diskpart
     goto WIM_SELECT
 )
 goto CONFIRM_FORMAT
@@ -116,11 +122,8 @@ echo WIM path/Duong dan WIM: %wim_path%
 echo -------------------------------
 echo %installing%
 echo -------------------------------
-:: Thực hiện lệnh cài đặt Windows ở đây
-:: Ví dụ: dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%selected_drive%:\
-
-:: Giả lập quá trình cài đặt
-ping -n 3 127.0.0.1 > nul
+:: Sử dụng dism để apply image
+dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%selected_drive%:\
 
 echo %success%
 pause
