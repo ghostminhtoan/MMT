@@ -3,10 +3,6 @@ setlocal enabledelayedexpansion
 color 0a
 cls
 
-:: Kiểm tra WinPE
-wpeutil UpdateBootInfo >nul 2>&1
-if not errorlevel 1 set WINPE=YES
-
 :MAIN_MENU
 echo.
 echo   ==============================
@@ -87,33 +83,8 @@ if not exist "%iso_path%" (
     goto SELECT_ISO_FILE
 )
 
-:MOUNT_ISO_WINPE
-if defined WINPE (
-    echo    Dang mount file ISO (phuong phap WinPE)...
-    
-    :: Tạo ổ đĩa ảo bằng ImDisk
-    for /f "tokens=2 delims==" %%d in ('wmic volume get DriveLetter /value ^| findstr /r /v "^$"') do (
-        set "last_drive=%%d"
-    )
-    set /a next_drive=!last_drive:~0,1!+1
-    set "mount_drive=!next_drive!:"
-    
-    imdisk -a -f "%iso_path%" -m %mount_drive% >nul 2>&1
-    if errorlevel 1 (
-        echo    Khong the mount ISO bang ImDisk!
-        echo    Co the do:
-        echo    - Thieu tien ich ImDisk trong WinPE
-        echo    - File ISO bi hong
-        timeout /t 5 >nul
-        goto SELECT_ISO_FILE
-    )
-    
-    set "iso_drive=%mount_drive%"
-    goto FIND_WIM_FILE
-)
-
-:MOUNT_ISO_NORMAL
-echo    Dang mount file ISO (phuong phap DiskPart)...
+:MOUNT_ISO_WITH_DISKPART
+echo    Dang mount file ISO bang DISKPART...
 (
     echo select vdisk file="%iso_path%"
     echo attach vdisk
@@ -124,35 +95,36 @@ echo    Dang mount file ISO (phuong phap DiskPart)...
 diskpart /s %temp%\mount_iso.txt > %temp%\diskpart_out.txt
 del %temp%\mount_iso.txt
 
-for /f "tokens=2,3" %%a in ('type %temp%\diskpart_out.txt ^| find "DVD"') do (
-    set "iso_drive=%%a"
+set "iso_drive="
+for /f "tokens=2 delims= " %%d in ('type %temp%\diskpart_out.txt ^| find "DVD"') do (
+    set "iso_drive=%%d:"
 )
 
 if not defined iso_drive (
-    echo    Khong the mount file ISO!
-    echo    Co the do:
-    echo    - Khong co quyen Administrator
-    echo    - File ISO khong hop le
-    timeout /t 5 >nul
+    echo    KHONG THE MOUNT FILE ISO!
+    echo    Nguyen nhan co the:
+    echo    1. Duong dan ISO chua khoang trang (can dat trong dau "")
+    echo    2. WinPE thieu driver can thiet
+    echo    3. File ISO bi hong
+    echo.
+    echo    Noi dung loi:
+    type %temp%\diskpart_out.txt
+    timeout /t 10 >nul
     goto SELECT_ISO_FILE
 )
 
 :FIND_WIM_FILE
-set "wim_path=%iso_drive%:\sources\install.wim"
+set "wim_path=%iso_drive%\sources\install.wim"
 if not exist "%wim_path%" (
     echo    Khong tim thay file install.wim trong %wim_path%!
     
-    if defined WINPE (
-        imdisk -d -m %iso_drive% >nul 2>&1
-    ) else (
-        echo select vdisk file="%iso_path%" > %temp%\unmount.txt
-        echo detach vdisk >> %temp%\unmount.txt
-        echo exit >> %temp%\unmount.txt
-        diskpart /s %temp%\unmount.txt
-        del %temp%\unmount.txt
-    )
+    echo select vdisk file="%iso_path%" > %temp%\unmount.txt
+    echo detach vdisk >> %temp%\unmount.txt
+    echo exit >> %temp%\unmount.txt
+    diskpart /s %temp%\unmount.txt
+    del %temp%\unmount.txt
     
-    timeout /t 2 >nul
+    timeout /t 3 >nul
     goto SELECT_ISO_FILE
 )
 
@@ -185,7 +157,7 @@ echo   Dang cai dat Windows...
 dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
 
 if errorlevel 1 (
-    echo    Co loi xay ra trong qua trinh cai dat!
+    echo    LOI: Cai dat that bai!
     pause
     goto UNMOUNT_AND_RETURN
 )
@@ -197,15 +169,11 @@ bootsect /nt60 %install_drive%: /force /mbr
 
 :UNMOUNT_AND_RETURN
 if defined iso_drive (
-    if defined WINPE (
-        imdisk -d -m %iso_drive% >nul 2>&1
-    ) else (
-        echo select vdisk file="%iso_path%" > %temp%\unmount.txt
-        echo detach vdisk >> %temp%\unmount.txt
-        echo exit >> %temp%\unmount.txt
-        diskpart /s %temp%\unmount.txt
-        del %temp%\unmount.txt
-    )
+    echo select vdisk file="%iso_path%" > %temp%\unmount.txt
+    echo detach vdisk >> %temp%\unmount.txt
+    echo exit >> %temp%\unmount.txt
+    diskpart /s %temp%\unmount.txt
+    del %temp%\unmount.txt
 )
 
 echo.
