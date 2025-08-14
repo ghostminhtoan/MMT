@@ -13,10 +13,10 @@ echo ==============================
 echo    WINDOWS INSTALLATION SCRIPT
 echo ==============================
 echo 1. English
-echo 2. Tieng Viet
-echo Z. Thoat/Exit
+echo 2. Tiếng Việt
+echo Z. Thoát/Exit
 echo ==============================
-set /p choice="Select language/Chon ngon ngu (1/2/Z): "
+set /p choice="Select language/Chọn ngôn ngữ (1/2/Z): "
 
 if "%choice%"=="1" (
     set LANG=EN
@@ -27,7 +27,7 @@ if "%choice%"=="1" (
 ) else if /i "%choice%"=="Z" (
     exit
 ) else (
-    echo Invalid choice/Lua chon khong hop le
+    echo Invalid choice/Lựa chọn không hợp lệ
     timeout /t 2 >nul
     goto MAIN_MENU
 )
@@ -60,7 +60,7 @@ for /f "skip=1 tokens=1,2 delims= " %%a in ('wmic logicaldisk get caption^,descr
 
 if %count% equ 0 (
     echo No available drives found!
-    echo Khong tim thay o dia nao!
+    echo Không tìm thấy ổ đĩa nào!
     pause
     goto MAIN_MENU
 )
@@ -102,9 +102,9 @@ if /i "%format%"=="Y" (
     echo Invalid choice. Please enter Y, N or Z.
     goto FORMAT_EN
 )
-goto FIND_WIM_EN
+goto SELECT_WIM_EN
 
-:FIND_WIM_EN
+:SELECT_WIM_EN
 cls
 echo ==============================
 echo    WINDOWS INSTALLATION - ENGLISH
@@ -112,30 +112,22 @@ echo ==============================
 echo Selected Drive: %target_drive%
 echo Format Option: %format%
 echo.
-echo STEP 3: FINDING INSTALL.WIM
+echo STEP 3: SELECT INSTALL.WIM
 echo (Press Z to return to format option)
 echo ==============================
 echo.
-echo Searching for install.wim in %target_drive%\sources...
-set wim_path=%target_drive%\sources\install.wim
-
-if exist "%wim_path%" (
-    echo Found: %wim_path%
-    pause
-    goto CONFIRM_EN
-) else (
-    echo install.wim not found in %target_drive%\sources
-    echo Please mount Windows ISO and select the correct drive
-    echo.
-    set /p wim_path="Enter manual path to install.wim (e.g., E:\sources\install.wim), or Z to return: "
-    if /i "%wim_path%"=="Z" goto FORMAT_EN
-    if not exist "%wim_path%" (
-        echo File not found. Please try again.
-        pause
-        goto FIND_WIM_EN
-    )
-    goto CONFIRM_EN
+echo INSTRUCTIONS TO FIND INSTALL.WIM:
+echo 1. Right-click on Windows ISO file and select "Mount"
+echo 2. A new drive will appear (e.g. E:)
+echo 3. The file is typically in E:\sources\install.wim
+echo.
+set /p wim_path="Enter path to install.wim (e.g., E:\sources\install.wim), or Z to return: "
+if /i "%wim_path%"=="Z" goto FORMAT_EN
+if not exist "%wim_path%" (
+    echo File not found. Please try again.
+    goto SELECT_WIM_EN
 )
+goto CONFIRM_EN
 
 :CONFIRM_EN
 cls
@@ -150,7 +142,7 @@ echo Format Drive: %format%
 echo WIM Location: %wim_path%
 echo.
 set /p confirm="Start installation? (Y/N/Z): "
-if /i "%confirm%"=="Z" goto FIND_WIM_EN
+if /i "%confirm%"=="Z" goto SELECT_WIM_EN
 if /i "%confirm%"=="Y" (
     goto INSTALL
 ) else if /i "%confirm%"=="N" (
@@ -163,14 +155,14 @@ if /i "%confirm%"=="Y" (
 :VIETNAM
 cls
 echo ==============================
-echo    CAI DAT WINDOWS - TIENG VIET
+echo    CÀI ĐẶT WINDOWS - TIẾNG VIỆT
 echo ==============================
 echo.
-echo BUOC 1: CHON O DIA
-echo (Nhan Z de quay ve menu)
+echo BƯỚC 1: CHỌN Ổ ĐĨA
+echo (Nhấn Z để quay về menu)
 echo ==============================
-echo Danh sach o dia kha dung:
-echo (khong bao gom o X: va o CD)
+echo Danh sách ổ đĩa khả dụng:
+echo (không bao gồm ổ X: và ổ CD)
 echo.
 
 set count=0
@@ -180,7 +172,7 @@ for /f "skip=1 tokens=1,2 delims= " %%a in ('wmic logicaldisk get caption^,descr
             if /i not "%%b"=="CD-ROM" (
                 set /a count+=1
                 set drive[!count!]=%%a
-                echo !count!. O dia: %%a
+                echo !count!. Ổ đĩa: %%a
             )
         )
     )
@@ -188,21 +180,21 @@ for /f "skip=1 tokens=1,2 delims= " %%a in ('wmic logicaldisk get caption^,descr
 
 if %count% equ 0 (
     echo No available drives found!
-    echo Khong tim thay o dia nao!
+    echo Không tìm thấy ổ đĩa nào!
     pause
     goto MAIN_MENU
 )
 
 :SELECT_DRIVE_VI
 echo.
-set /p drive_num="Chon so thu tu o dia (1-%count%), hoac Z de quay ve: "
+set /p drive_num="Chọn số thứ tự ổ đĩa (1-%count%), hoặc Z để quay về: "
 if /i "%drive_num%"=="Z" goto MAIN_MENU
 if %drive_num% lss 1 (
-    echo Lua chon khong hop le. Vui long thu lai.
+    echo Lựa chọn không hợp lệ. Vui lòng thử lại.
     goto SELECT_DRIVE_VI
 )
 if %drive_num% gtr %count% (
-    echo Lua chon khong hop le. Vui long thu lai.
+    echo Lựa chọn không hợp lệ. Vui lòng thử lại.
     goto SELECT_DRIVE_VI
 )
 set target_drive=!drive[%drive_num%]!
@@ -211,93 +203,85 @@ goto FORMAT_VI
 :FORMAT_VI
 cls
 echo ==============================
-echo    CAI DAT WINDOWS - TIENG VIET
+echo    CÀI ĐẶT WINDOWS - TIẾNG VIỆT
 echo ==============================
-echo O dia da chon: %target_drive%
+echo Ổ đĩa đã chọn: %target_drive%
 echo.
-echo BUOC 2: TUY CHON DINH DANG
-echo (Nhan Z de quay ve chon o dia)
+echo BƯỚC 2: TÙY CHỌN ĐỊNH DẠNG
+echo (Nhấn Z để quay về chọn ổ đĩa)
 echo ==============================
-set /p format="Dinh dang o dia %target_drive%? (Y/N/Z): "
+set /p format="Định dạng ổ đĩa %target_drive%? (Y/N/Z): "
 if /i "%format%"=="Z" goto VIETNAM
 if /i "%format%"=="Y" (
-    echo Dang dinh dang o dia %target_drive%...
+    echo Đang định dạng ổ đĩa %target_drive%...
     format %target_drive% /FS:NTFS /Q /Y >nul
-    echo Dinh dang hoan tat.
+    echo Định dạng hoàn tất.
 ) else if /i "%format%"=="N" (
-    echo Bo qua dinh dang.
+    echo Bỏ qua định dạng.
 ) else (
-    echo Lua chon khong hop le. Vui long nhap Y, N hoac Z.
+    echo Lựa chọn không hợp lệ. Vui lòng nhập Y, N hoặc Z.
     goto FORMAT_VI
 )
-goto FIND_WIM_VI
+goto SELECT_WIM_VI
 
-:FIND_WIM_VI
+:SELECT_WIM_VI
 cls
 echo ==============================
-echo    CAI DAT WINDOWS - TIENG VIET
+echo    CÀI ĐẶT WINDOWS - TIẾNG VIỆT
 echo ==============================
-echo O dia da chon: %target_drive%
-echo Tuy chon dinh dang: %format%
+echo Ổ đĩa đã chọn: %target_drive%
+echo Tùy chọn định dạng: %format%
 echo.
-echo BUOC 3: TIM FILE INSTALL.WIM
-echo (Nhan Z de quay ve tuy chon dinh dang)
+echo BƯỚC 3: CHỌN FILE INSTALL.WIM
+echo (Nhấn Z để quay về tùy chọn định dạng)
 echo ==============================
 echo.
-echo Dang tim install.wim trong %target_drive%\sources...
-set wim_path=%target_drive%\sources\install.wim
-
-if exist "%wim_path%" (
-    echo Da tim thay: %wim_path%
-    pause
-    goto CONFIRM_VI
-) else (
-    echo Khong tim thay install.wim trong %target_drive%\sources
-    echo Vui long mount file ISO Windows va chon dung o dia
-    echo.
-    set /p wim_path="Nhap thu cong duong dan den install.wim (vi du: E:\sources\install.wim), hoac Z de quay ve: "
-    if /i "%wim_path%"=="Z" goto FORMAT_VI
-    if not exist "%wim_path%" (
-        echo Khong tim thay file. Vui long thu lai.
-        pause
-        goto FIND_WIM_VI
-    )
-    goto CONFIRM_VI
+echo HƯỚNG DẪN TÌM FILE INSTALL.WIM:
+echo 1. Click chuột phải vào file ISO và chọn "Mount"
+echo 2. Một ổ đĩa mới sẽ xuất hiện (ví dụ E:)
+echo 3. File cần tìm thường ở vị trí E:\sources\install.wim
+echo.
+set /p wim_path="Nhập đường dẫn đến file install.wim (ví dụ: E:\sources\install.wim), hoặc Z để quay về: "
+if /i "%wim_path%"=="Z" goto FORMAT_VI
+if not exist "%wim_path%" (
+    echo Không tìm thấy file. Vui lòng thử lại.
+    goto SELECT_WIM_VI
 )
+goto CONFIRM_VI
 
 :CONFIRM_VI
 cls
 echo ==============================
-echo    CAI DAT WINDOWS - TIENG VIET
+echo    CÀI ĐẶT WINDOWS - TIẾNG VIỆT
 echo ==============================
-echo TOM TAT CAI DAT
-echo (Nhan Z de quay ve chon file WIM)
+echo TÓM TẮT CÀI ĐẶT
+echo (Nhấn Z để quay về chọn file WIM)
 echo ==============================
-echo O dia: %target_drive%
-echo Dinh dang: %format%
-echo Vi tri WIM: %wim_path%
+echo Ổ đĩa: %target_drive%
+echo Định dạng: %format%
+echo Vị trí WIM: %wim_path%
 echo.
-set /p confirm="Bat dau cai dat? (Y/N/Z): "
-if /i "%confirm%"=="Z" goto FIND_WIM_VI
+set /p confirm="Bắt đầu cài đặt? (Y/N/Z): "
+if /i "%confirm%"=="Z" goto SELECT_WIM_VI
 if /i "%confirm%"=="Y" (
     goto INSTALL
 ) else if /i "%confirm%"=="N" (
     goto VIETNAM
 ) else (
-    echo Lua chon khong hop le. Vui long nhap Y, N hoac Z.
+    echo Lựa chọn không hợp lệ. Vui lòng nhập Y, N hoặc Z.
     goto CONFIRM_VI
 )
 
 :INSTALL
 cls
 echo.
-echo Starting installation/Bat dau cai dat...
+echo Starting installation/Bắt đầu cài đặt...
 echo Using dism to apply the image...
 
 dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%target_drive%\
 
 echo.
-echo Installation completed/Cai dat hoan tat!
-echo You may now reboot your system/Co the khoi dong lai may.
+echo Installation completed/Cài đặt hoàn tất!
+echo You may now reboot your system/Có thể khởi động lại máy.
 pause
 exit
