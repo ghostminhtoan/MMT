@@ -3,119 +3,125 @@ setlocal enabledelayedexpansion
 color 0a
 cls
 
-:: Language setting
-set lang=EN
-if "%1"=="/vi" set lang=VI
+:: ==============================================
+:: CẤU HÌNH NGÔN NGỮ (Language Configuration)
+:: ==============================================
+if "%1"=="/en" (
+    set lang=EN
+) else (
+    set lang=VI
+)
 
-:: Language strings
+:: ==============================================
+:: ĐỊNH NGHĨA CHUỖI NGÔN NGỮ (Language Strings)
+:: ==============================================
 if "%lang%"=="VI" (
-    set str_menu_title=~ CÔNG CỤ CÀI ĐẶT WINDOWS ~
-    set str_option1=1. Bắt đầu cài đặt
-    set str_option2=2. Thoát
-    set str_choice=Lựa chọn của bạn (1-2, z để quay về):
+    set str_title=~ CÔNG CỤ CÀI ĐẶT WINDOWS ~
+    set str_menu1=1. Bắt đầu cài đặt
+    set str_menu2=2. Thoát chương trình
+    set str_prompt=Lựa chọn của bạn (1-2):
     set str_invalid=Lựa chọn không hợp lệ!
     
-    set str_install_title=~ CÀI ĐẶT WINDOWS ~
-    set str_drive_list=Danh sách ổ đĩa khả dụng:
-    set str_drive_size=GB
-    set str_unknown_size=Không xác định
-    set str_select_drive=Nhập ký tự ổ đĩa (VD: C, D,...), z để quay về:
-    set str_invalid_drive=Ổ đĩa không tồn tại!
+    set str_drive_title=~ CHỌN Ổ ĐĨA CÀI ĐẶT ~
+    set str_drive_list=Các ổ đĩa hiện có:
+    set str_drive_select=Nhập ký tự ổ đĩa (VD: C, D...):
+    set str_drive_error=Ổ đĩa không tồn tại!
     
-    set str_format=Format ổ đĩa %drive%: không? (y/n, z để quay về):
-    set str_formatting=Đang format...
-    set str_format_success=Format thành công!
-    set str_format_error=Lỗi khi format!
+    set str_format=Format ổ đĩa %drive%:? (y/n):
+    set str_formatting=Đang thực hiện format...
+    set str_format_ok=Format thành công!
+    set str_format_fail=Lỗi khi format!
     
+    set str_wim_title=~ CHỌN FILE INSTALL.WIM ~
     set str_wim_guide=HƯỚNG DẪN:
-    set str_wim_step1=1. Click chuột phải vào file ISO
-    set str_wim_step2=2. Chọn 'Mount' từ menu
-    set str_wim_step3=3. Mở ổ đĩa ảo mới xuất hiện
-    set str_wim_step4=4. Tìm file install.wim trong thư mục \sources
-    set str_wim_step5=5. Nhập đường dẫn đầy đủ (VD: E:\sources\install.wim)
-    set str_wim_prompt=Nhập đường dẫn file install.wim (z để quay về):
-    set str_wim_missing=File WIM không tồn tại!
+    set str_wim_step1=1. Chuột phải vào file ISO -> Mount
+    set str_wim_step2=2. Mở ổ đĩa ảo vừa tạo
+    set str_wim_step3=3. Vào thư mục \sources
+    set str_wim_step4=4. Nhập đường dẫn file install.wim
+    set str_wim_example=VD: E:\sources\install.wim
+    set str_wim_prompt=Nhập đường dẫn file install.wim:
+    set str_wim_error=Không tìm thấy file WIM!
     
     set str_confirm_title=~ XÁC NHẬN CÀI ĐẶT ~
-    set str_target_drive=Ổ đĩa đích: 
-    set str_wim_file=File WIM:     
-    set str_confirm=Xác nhận? (y/n, z để quay về):
-    set str_cancel=Đã hủy quá trình!
+    set str_confirm_drive=Ổ đĩa đích: %drive%:
+    set str_confirm_wim=File WIM: %wim%
+    set str_confirm_ask=Xác nhận cài đặt? (y/n):
     
     set str_installing=Đang cài đặt Windows...
-    set str_error=LỖI: Cài đặt thất bại (Mã lỗi: %errorlevel%)
+    set str_error=LỖI: Không thể cài đặt (Mã lỗi: %errorlevel%)
     set str_bootsect=Đang tạo boot sector...
-    set str_success=CÀI ĐẶT THÀNH CÔNG!
-    set str_reboot=Khởi động lại máy? (y/n):
+    set str_success=CÀI ĐẶT HOÀN TẤT!
+    set str_reboot=Khởi động lại ngay? (y/n):
 ) else (
-    set str_menu_title=~ WINDOWS INSTALLATION TOOL ~
-    set str_option1=1. Start installation
-    set str_option2=2. Exit
-    set str_choice=Your choice (1-2, z to return):
-    set str_invalid=Invalid choice!
+    set str_title=~ WINDOWS SETUP TOOL ~
+    set str_menu1=1. Start Installation
+    set str_menu2=2. Exit
+    set str_prompt=Your choice (1-2):
+    set str_invalid=Invalid selection!
     
-    set str_install_title=~ WINDOWS INSTALLATION ~
+    set str_drive_title=~ SELECT TARGET DRIVE ~
     set str_drive_list=Available drives:
-    set str_drive_size=GB
-    set str_unknown_size=Unknown
-    set str_select_drive=Enter drive letter (e.g. C, D,...), z to return:
-    set str_invalid_drive=Drive doesn't exist!
+    set str_drive_select=Enter drive letter (e.g. C, D...):
+    set str_drive_error=Drive not found!
     
-    set str_format=Format drive %drive%: ? (y/n, z to return):
+    set str_format=Format drive %drive%:? (y/n):
     set str_formatting=Formatting...
-    set str_format_success=Format successful!
-    set str_format_error=Format error!
+    set str_format_ok=Format successful!
+    set str_format_fail=Format failed!
     
+    set str_wim_title=~ SELECT INSTALL.WIM ~
     set str_wim_guide=INSTRUCTIONS:
-    set str_wim_step1=1. Right-click ISO file
-    set str_wim_step2=2. Select 'Mount' from menu
-    set str_wim_step3=3. Open the new virtual drive
-    set str_wim_step4=4. Find install.wim in \sources folder
-    set str_wim_step5=5. Enter full path (e.g. E:\sources\install.wim)
-    set str_wim_prompt=Enter install.wim path (z to return):
-    set str_wim_missing=WIM file not found!
+    set str_wim_step1=1. Right-click ISO -> Mount
+    set str_wim_step2=2. Open virtual drive
+    set str_wim_step3=3. Go to \sources folder
+    set str_wim_step4=4. Enter install.wim path
+    set str_wim_example=e.g. E:\sources\install.wim
+    set str_wim_prompt=Enter install.wim path:
+    set str_wim_error=WIM file not found!
     
-    set str_confirm_title=~ INSTALLATION CONFIRMATION ~
-    set str_target_drive=Target drive: 
-    set str_wim_file=WIM file:     
-    set str_confirm=Confirm? (y/n, z to return):
-    set str_cancel=Operation cancelled!
+    set str_confirm_title=~ CONFIRM INSTALLATION ~
+    set str_confirm_drive=Target drive: %drive%:
+    set str_confirm_wim=WIM file: %wim%
+    set str_confirm_ask=Confirm installation? (y/n):
     
     set str_installing=Installing Windows...
     set str_error=ERROR: Installation failed (Code: %errorlevel%)
     set str_bootsect=Creating boot sector...
-    set str_success=INSTALLATION SUCCESSFUL!
+    set str_success=INSTALLATION COMPLETE!
     set str_reboot=Reboot now? (y/n):
 )
 
+:: ==============================================
+:: MENU CHÍNH (MAIN MENU)
+:: ==============================================
 :MAIN_MENU
 cls
 echo.
 echo   ==============================
-echo   %str_menu_title%
+echo   %str_title%
 echo   ==============================
 echo.
-echo   %str_option1%
-echo   %str_option2%
+echo   %str_menu1%
+echo   %str_menu2%
 echo.
-set /p choice="   %str_choice% "
+set /p choice="   %str_prompt% "
 
-if "%choice%"=="1" goto INSTALL_WINDOWS
+if "%choice%"=="1" goto DRIVE_SELECT
 if "%choice%"=="2" exit
-if /i "%choice%"=="z" goto MAIN_MENU
 echo    %str_invalid%
 timeout /t 2 >nul
 goto MAIN_MENU
 
-:INSTALL_WINDOWS
+:: ==============================================
+:: CHỌN Ổ ĐĨA (DRIVE SELECTION)
+:: ==============================================
+:DRIVE_SELECT
 cls
 echo.
 echo   ==============================
-echo   %str_install_title%
+echo   %str_drive_title%
 echo   ==============================
 echo.
-
-:SHOW_DRIVES
 echo   %str_drive_list%
 echo.
 for /f "tokens=1-3 delims= " %%a in ('wmic logicaldisk where "DriveType=3" get caption^,size^,description /format:list ^| find "="') do (
@@ -126,62 +132,70 @@ for /f "tokens=2 delims==" %%d in ('set drive_') do (
     if /i not "!drive!"=="X:" (
         if defined drive_!drive! (
             set /a sizeGB=drive_!drive!/1073741824 2>nul
-            echo    !drive! - !sizeGB! %str_drive_size%
+            echo    !drive! - !sizeGB! GB
         ) else (
-            echo    !drive! - %str_unknown_size%
+            echo    !drive! - Size unknown
         )
     )
 )
 echo.
-
-:SELECT_DRIVE
-set /p install_drive="   %str_select_drive% "
-if /i "%install_drive%"=="z" goto MAIN_MENU
-if not exist %install_drive%:\ (
-    echo    %str_invalid_drive%
+:DRIVE_INPUT
+set /p drive="   %str_drive_select% "
+if not exist %drive%:\ (
+    echo    %str_drive_error%
     timeout /t 2 >nul
-    goto SELECT_DRIVE
+    goto DRIVE_INPUT
 )
 
-:ASK_FORMAT
+:: ==============================================
+:: FORMAT Ổ ĐĨA (DRIVE FORMATTING)
+:: ==============================================
+:DRIVE_FORMAT
 echo.
-set /p format_drive="   %str_format% "
-if /i "%format_drive%"=="z" goto MAIN_MENU
-if /i "%format_drive%"=="y" (
+set /p format="   %str_format% "
+if /i "%format%"=="y" (
     echo    %str_formatting%
-    format %install_drive%: /FS:NTFS /Q /Y
+    format %drive%: /FS:NTFS /Q /Y
     if errorlevel 1 (
-        echo    %str_format_error%
+        echo    %str_format_fail%
         timeout /t 2 >nul
-        goto ASK_FORMAT
+        goto DRIVE_FORMAT
     )
-    echo    %str_format_success%
+    echo    %str_format_ok%
     timeout /t 2 >nul
-) else if /i not "%format_drive%"=="n" (
-    goto ASK_FORMAT
+) else if /i not "%format%"=="n" (
+    goto DRIVE_FORMAT
 )
 
-:SELECT_WIM
+:: ==============================================
+:: CHỌN FILE WIM (WIM SELECTION)
+:: ==============================================
+:WIM_SELECT
 cls
 echo.
 echo   ==============================
-echo   %str_wim_guide%
+echo   %str_wim_title%
 echo   ==============================
 echo.
+echo   %str_wim_guide%
 echo   %str_wim_step1%
 echo   %str_wim_step2%
 echo   %str_wim_step3%
 echo   %str_wim_step4%
-echo   %str_wim_step5%
 echo.
-set /p wim_path="   %str_wim_prompt% "
-if /i "%wim_path%"=="z" goto MAIN_MENU
-if not exist "%wim_path%" (
-    echo    %str_wim_missing%
-    timeout /t 3 >nul
-    goto SELECT_WIM
+echo   %str_wim_example%
+echo.
+:WIM_INPUT
+set /p wim="   %str_wim_prompt% "
+if not exist "%wim%" (
+    echo    %str_wim_error%
+    timeout /t 2 >nul
+    goto WIM_INPUT
 )
 
+:: ==============================================
+:: XÁC NHẬN (CONFIRMATION)
+:: ==============================================
 :CONFIRM
 cls
 echo.
@@ -189,22 +203,21 @@ echo   ==============================
 echo   %str_confirm_title%
 echo   ==============================
 echo.
-echo   %str_target_drive% %install_drive%:
-echo   %str_wim_file% %wim_path%
+echo   %str_confirm_drive%
+echo   %str_confirm_wim%
 echo.
-set /p confirm="   %str_confirm% "
-if /i "%confirm%"=="z" goto MAIN_MENU
-if /i "%confirm%"=="n" (
-    echo    %str_cancel%
-    timeout /t 2 >nul
-    goto MAIN_MENU
-)
+set /p confirm="   %str_confirm_ask% "
+if /i "%confirm%"=="n" goto MAIN_MENU
 if /i not "%confirm%"=="y" goto CONFIRM
 
+:: ==============================================
+:: CÀI ĐẶT (INSTALLATION)
+:: ==============================================
 :INSTALL
+cls
 echo.
 echo   %str_installing%
-dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
+dism /apply-image /imagefile:"%wim%" /index:1 /applydir:%drive%:\
 
 if errorlevel 1 (
     echo    %str_error%
@@ -213,12 +226,15 @@ if errorlevel 1 (
 )
 
 echo   %str_bootsect%
-bootsect /nt60 %install_drive%: /force /mbr
+bootsect /nt60 %drive%: /force /mbr
 echo.
 echo   %str_success%
 echo.
 
-:ASK_REBOOT
+:: ==============================================
+:: KHỞI ĐỘNG LẠI (REBOOT)
+:: ==============================================
+:REBOOT
 set /p reboot="   %str_reboot% "
 if /i "%reboot%"=="y" (
     wpeutil reboot
@@ -226,5 +242,5 @@ if /i "%reboot%"=="y" (
     timeout /t 3 >nul
     goto MAIN_MENU
 ) else (
-    goto ASK_REBOOT
+    goto REBOOT
 )
