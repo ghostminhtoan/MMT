@@ -1,132 +1,209 @@
 @echo off
+chcp 65001 >nul
 setlocal enabledelayedexpansion
-color 0a
-cls
 
 :MAIN_MENU
-echo.
-echo   ==============================
-echo      WINDOWS INSTALLATION TOOL
-echo   ==============================
-echo.
-echo   1. Bat dau cai dat Windows
-echo   2. Thoat
-echo.
-set /p choice="   Lua chon cua ban (1-2, z de quay ve menu): "
-
-if "%choice%"=="1" goto INSTALL_WINDOWS
-if "%choice%"=="2" exit
-if /i "%choice%"=="z" goto MAIN_MENU
-echo    Lua chon khong hop le!
-timeout /t 2 >nul
-goto MAIN_MENU
-
-:INSTALL_WINDOWS
 cls
-echo.
-echo   ==============================
-echo      CAI DAT WINDOWS
-echo   ==============================
-echo.
+echo ==============================
+echo    WINDOWS INSTALLATION SCRIPT
+echo ==============================
+echo 1. English
+echo 2. Tieng Viet
+echo ==============================
+set /p choice="Select language/Chon ngon ngu (1/2): "
 
-:SHOW_DRIVES
-echo   Danh sach o dia kha dung:
-echo.
-for /f "tokens=1-3 delims= " %%a in ('wmic logicaldisk where "DriveType=3" get caption^,size^,description /format:list ^| find "="') do (
-    set drive_%%a=%%b
-)
-for /f "tokens=2 delims==" %%d in ('set drive_') do (
-    set "drive=%%d"
-    if /i not "!drive!"=="X:" (
-        if defined drive_!drive! (
-            set /a sizeGB=drive_!drive!/1073741824 2>nul
-            echo    !drive! - !sizeGB! GB
-        ) else (
-            echo    !drive! - Kich thuoc khong xac dinh
-        )
-    )
-)
-echo.
-
-:SELECT_DRIVE
-set /p install_drive="   Nhap ky tu o dia (VD: C, D,...), z de quay ve: "
-if /i "%install_drive%"=="z" goto MAIN_MENU
-if not exist %install_drive%:\ (
-    echo    O dia khong ton tai!
+if "%choice%"=="1" (
+    set LANG=EN
+    goto ENGLISH
+) else if "%choice%"=="2" (
+    set LANG=VI
+    goto VIETNAM
+) else (
+    echo Invalid choice. Please try again.
+    echo Lua chon khong hop le. Vui long thu lai.
     timeout /t 2 >nul
-    goto SELECT_DRIVE
-)
-
-:ASK_FORMAT
-echo.
-set /p format_drive="   Ban co muon format o dia %install_drive%: khong? (y/n, z de quay ve): "
-if /i "%format_drive%"=="z" goto MAIN_MENU
-if /i "%format_drive%"=="y" (
-    echo    Dang format o dia %install_drive%:...
-    format %install_drive%: /FS:NTFS /Q /Y
-    if errorlevel 1 (
-        echo    Co loi xay ra khi format!
-        timeout /t 2 >nul
-        goto ASK_FORMAT
-    )
-    echo    Format thanh cong!
-    timeout /t 2 >nul
-) else if /i not "%format_drive%"=="n" (
-    echo    Lua chon khong hop le!
-    goto ASK_FORMAT
-)
-
-:SELECT_WIM
-cls
-echo.
-echo   ==============================
-echo      CHON FILE INSTALL.WIM
-echo   ==============================
-echo.
-echo   HUONG DAN:
-echo   1. Mount file ISO bang cach click chuot phai -> Mount
-echo   2. Vao o dia ao moi xuat hien
-echo   3. Tim file install.wim trong thu muc \sources
-echo   4. Nhap duong dan day du (VD: E:\sources\install.wim)
-echo.
-set /p wim_path="   Nhap duong dan file install.wim (z de quay ve): "
-if /i "%wim_path%"=="z" goto MAIN_MENU
-if not exist "%wim_path%" (
-    echo    File WIM khong ton tai!
-    echo    Vui long kiem tra lai duong dan
-    timeout /t 3 >nul
-    goto SELECT_WIM
-)
-
-:CONFIRM
-cls
-echo.
-echo   ==============================
-echo      XAC NHAN CAI DAT
-echo   ==============================
-echo.
-echo   O dia cai dat: %install_drive%:
-echo   File WIM:      %wim_path%
-echo.
-set /p confirm="   Ban co chac chan? (y/n, z de quay ve): "
-if /i "%confirm%"=="z" goto MAIN_MENU
-if /i "%confirm%"=="n" goto MAIN_MENU
-if /i not "%confirm%"=="y" goto CONFIRM
-
-:INSTALL
-echo.
-echo   Dang cai dat Windows...
-dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
-
-if errorlevel 1 (
-    echo    LOI: Cai dat that bai (Ma loi: %errorlevel%)
-    pause
     goto MAIN_MENU
 )
 
-echo   Tao boot sector...
-bootsect /nt60 %install_drive%: /force /mbr
+:ENGLISH
+cls
+echo ==============================
+echo    WINDOWS INSTALLATION - ENGLISH
+echo ==============================
 echo.
-echo   CAI DAT THANH CONG!
-timeout /t 3 >nul
-goto MAIN_MENU
+echo STEP 1: SELECT TARGET DRIVE
+echo ==============================
+echo List of available drives:
+echo (excluding X: and CD drives)
+echo.
+
+set count=0
+for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename') do (
+    if "%%a" neq "" (
+        if /i not "%%a"=="X:" (
+            if /i not "%%b"=="CD-ROM" (
+                set /a count+=1
+                set drive[!count!]=%%a
+                echo !count!. Drive: %%a ^(%%b^) - Volume: %%d - Size: %%c bytes
+            )
+        )
+    )
+)
+
+:SELECT_DRIVE_EN
+set /p drive_num="Select drive number (1-%count%): "
+if %drive_num% lss 1 (
+    echo Invalid selection. Please try again.
+    goto SELECT_DRIVE_EN
+)
+if %drive_num% gtr %count% (
+    echo Invalid selection. Please try again.
+    goto SELECT_DRIVE_EN
+)
+set target_drive=!drive[%drive_num%]!
+
+:FORMAT_EN
+echo.
+echo ==============================
+echo STEP 2: FORMAT OPTION
+echo ==============================
+set /p format="Format the drive %target_drive%? (Y/N): "
+if /i "%format%"=="Y" (
+    echo Formatting drive %target_drive%...
+    format %target_drive% /FS:NTFS /Q /Y >nul
+    echo Format completed.
+) else if /i "%format%"=="N" (
+    echo Skipping format.
+) else (
+    echo Invalid choice. Please enter Y or N.
+    goto FORMAT_EN
+)
+
+:SELECT_WIM_EN
+echo.
+echo ==============================
+echo STEP 3: SELECT INSTALL.WIM
+echo ==============================
+echo.
+set /p wim_path="Enter path to install.wim (e.g., D:\sources\install.wim): "
+if not exist "%wim_path%" (
+    echo File not found. Please try again.
+    goto SELECT_WIM_EN
+)
+
+:CONFIRM_EN
+echo.
+echo ==============================
+echo INSTALLATION SUMMARY
+echo ==============================
+echo Target Drive: %target_drive%
+echo Format Drive: %format%
+echo WIM Location: %wim_path%
+echo.
+set /p confirm="Start installation? (Y/N): "
+if /i "%confirm%"=="Y" (
+    goto INSTALL
+) else if /i "%confirm%"=="N" (
+    goto ENGLISH
+) else (
+    echo Invalid choice. Please enter Y or N.
+    goto CONFIRM_EN
+)
+
+:VIETNAM
+cls
+echo ==============================
+echo    CAI DAT WINDOWS - TIENG VIET
+echo ==============================
+echo.
+echo BUOC 1: CHON O DIA
+echo ==============================
+echo Danh sach o dia kha dung:
+echo (khong bao gom o X: va o CD)
+echo.
+
+set count=0
+for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename') do (
+    if "%%a" neq "" (
+        if /i not "%%a"=="X:" (
+            if /i not "%%b"=="CD-ROM" (
+                set /a count+=1
+                set drive[!count!]=%%a
+                echo !count!. O dia: %%a ^(%%b^) - Ten: %%d - Dung luong: %%c bytes
+            )
+        )
+    )
+)
+
+:SELECT_DRIVE_VI
+set /p drive_num="Chon so thu tu o dia (1-%count%): "
+if %drive_num% lss 1 (
+    echo Lua chon khong hop le. Vui long thu lai.
+    goto SELECT_DRIVE_VI
+)
+if %drive_num% gtr %count% (
+    echo Lua chon khong hop le. Vui long thu lai.
+    goto SELECT_DRIVE_VI
+)
+set target_drive=!drive[%drive_num%]!
+
+:FORMAT_VI
+echo.
+echo ==============================
+echo BUOC 2: TUY CHON DINH DANG
+echo ==============================
+set /p format="Dinh dang o dia %target_drive%? (Y/N): "
+if /i "%format%"=="Y" (
+    echo Dang dinh dang o dia %target_drive%...
+    format %target_drive% /FS:NTFS /Q /Y >nul
+    echo Dinh dang hoan tat.
+) else if /i "%format%"=="N" (
+    echo Bo qua dinh dang.
+) else (
+    echo Lua chon khong hop le. Vui long nhap Y hoac N.
+    goto FORMAT_VI
+)
+
+:SELECT_WIM_VI
+echo.
+echo ==============================
+echo BUOC 3: CHON FILE INSTALL.WIM
+echo ==============================
+echo.
+set /p wim_path="Nhap duong dan den file install.wim (vi du: D:\sources\install.wim): "
+if not exist "%wim_path%" (
+    echo Khong tim thay file. Vui long thu lai.
+    goto SELECT_WIM_VI
+)
+
+:CONFIRM_VI
+echo.
+echo ==============================
+echo TOM TAT CAI DAT
+echo ==============================
+echo O dia: %target_drive%
+echo Dinh dang: %format%
+echo Vi tri WIM: %wim_path%
+echo.
+set /p confirm="Bat dau cai dat? (Y/N): "
+if /i "%confirm%"=="Y" (
+    goto INSTALL
+) else if /i "%confirm%"=="N" (
+    goto VIETNAM
+) else (
+    echo Lua chon khong hop le. Vui long nhap Y hoac N.
+    goto CONFIRM_VI
+)
+
+:INSTALL
+echo.
+echo Starting installation/Bat dau cai dat...
+echo Using dism to apply the image...
+
+dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%target_drive%\
+
+echo.
+echo Installation completed/Cai dat hoan tat!
+echo You may now reboot your system/Co the khoi dong lai may.
+pause
+exit
