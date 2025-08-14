@@ -6,12 +6,12 @@ cls
 echo.
 echo ==============================
 echo    WINDOWS INSTALLATION MENU
-echo    MENU CAI DAT WINDOWS
+echo    MENU CAI DẶT WINDOWS
 echo ==============================
 echo 1. English
-echo 2. Tieng Viet
+echo 2. Tiếng Việt
 echo ==============================
-set /p choice="Select your language/Chon ngon ngu (1/2): "
+set /p choice="Select your language/Chọn ngôn ngữ (1/2): "
 
 if "%choice%"=="1" goto ENGLISH
 if "%choice%"=="2" goto VIETNAMESE
@@ -32,15 +32,15 @@ goto DISK_SELECT
 
 :VIETNAMESE
 set lang=VI
-set drive_text=Chon o cung de cai Windows (vd: 0,1,2...)
-set format_text=Co format o cung nay khong? (Y/N)
-set format_note=Chu y: Y=Co, N=Khong
-set wim_text=Nhap duong dan toi file install.wim
-set wim_guide=Huong dan: Chuot phai vao file ISO -> Mount -> Tim trong o dia vua mount (vd: E:\sources\install.wim)
-set back_text=Nhan 'z' de quay lai
-set invalid_text=Lua chon khong hop le, vui long thu lai
-set install_text=Dang cai dat Windows...
-set success_text=Cai dat thanh cong!
+set drive_text=Chọn ổ cứng để cài Windows (vd: 0,1,2...)
+set format_text=Có format ổ cứng này không? (Y/N)
+set format_note=Chú ý: Y=Có, N=Không
+set wim_text=Nhập đường dẫn tới file install.wim
+set wim_guide=Hướng dẫn: Chuột phải vào file ISO -> Mount -> Tìm trong ổ đĩa vừa mount (vd: E:\sources\install.wim)
+set back_text=Nhấn 'z' để quay lại
+set invalid_text=Lựa chọn không hợp lệ, vui lòng thử lại
+set install_text=Đang cài đặt Windows...
+set success_text=Cài đặt thành công!
 goto DISK_SELECT
 
 :DISK_SELECT
@@ -48,13 +48,15 @@ cls
 echo.
 echo ==============================
 if "%lang%"=="EN" echo    WINDOWS INSTALLATION - DISK SELECTION
-if "%lang%"=="VI" echo    CAI DAT WINDOWS - CHON O CUNG
+if "%lang%"=="VI" echo    CÀI ĐẶT WINDOWS - CHỌN Ổ CỨNG
 echo ==============================
 echo %drive_text%
 echo %back_text%
 echo ==============================
-diskpart /s "%~dp0list_disks.txt" | find "Disk ###"
-set /p disk="Disk number/So thu tu o dia: "
+for /f "tokens=*" %%a in ('diskpart /s "%~dp0list_disks.txt" ^| find "Disk ###"') do (
+    echo %%a
+)
+set /p disk="Disk number/Số thứ tự ổ đĩa: "
 
 if "%disk%"=="z" goto MAIN_MENU
 
@@ -63,7 +65,7 @@ cls
 echo.
 echo ==============================
 if "%lang%"=="EN" echo    FORMAT DISK %disk%?
-if "%lang%"=="VI" echo    FORMAT O DIA %disk%?
+if "%lang%"=="VI" echo    FORMAT Ổ ĐĨA %disk%?
 echo ==============================
 echo %format_text%
 echo %format_note%
@@ -92,13 +94,13 @@ cls
 echo.
 echo ==============================
 if "%lang%"=="EN" echo    SELECT INSTALL.WIM LOCATION
-if "%lang%"=="VI" echo    CHON VI TRI FILE INSTALL.WIM
+if "%lang%"=="VI" echo    CHỌN VỊ TRÍ FILE INSTALL.WIM
 echo ==============================
 echo %wim_text%
 echo %wim_guide%
 echo %back_text%
 echo ==============================
-set /p wim_path="Path/Duong dan: "
+set /p wim_path="Path/Đường dẫn: "
 
 if "%wim_path%"=="z" goto DISK_SELECT
 if not exist "%wim_path%" (
