@@ -14,7 +14,7 @@ echo    WINDOWS INSTALLATION SCRIPT
 echo ==============================
 echo 1. English
 echo 2. Tieng Viet
-echo Z. Thoat/Exit
+echo Z. Exit/Thoat
 echo ==============================
 set /p choice="Select language/Chon ngon ngu (1/2/Z): "
 
@@ -116,7 +116,13 @@ echo STEP 3: SELECT INSTALL.WIM
 echo (Press Z to return to format option)
 echo ==============================
 echo.
-set /p wim_path="Enter path to install.wim (e.g., D:\sources\install.wim), or Z to return: "
+echo HOW TO FIND INSTALL.WIM:
+echo 1. Right-click Windows ISO file
+echo 2. Select "Mount" (this creates a new drive)
+echo 3. Look for the new drive (e.g. E:)
+echo 4. Path is typically E:\sources\install.wim
+echo.
+set /p wim_path="Enter path to install.wim (e.g., E:\sources\install.wim), or Z to return: "
 if /i "%wim_path%"=="Z" goto FORMAT_EN
 if not exist "%wim_path%" (
     echo File not found. Please try again.
@@ -231,7 +237,13 @@ echo BUOC 3: CHON FILE INSTALL.WIM
 echo (Nhan Z de quay ve tuy chon dinh dang)
 echo ==============================
 echo.
-set /p wim_path="Nhap duong dan den file install.wim (vi du: D:\sources\install.wim), hoac Z de quay ve: "
+echo HUONG DAN TIM FILE INSTALL.WIM:
+echo 1. Chuot phai vao file ISO Windows
+echo 2. Chon "Mount" (se tao o dia moi)
+echo 3. Tim o dia moi (vi du E:)
+echo 4. Duong dan thuong la E:\sources\install.wim
+echo.
+set /p wim_path="Nhap duong dan den file install.wim (vi du: E:\sources\install.wim), hoac Z de quay ve: "
 if /i "%wim_path%"=="Z" goto FORMAT_VI
 if not exist "%wim_path%" (
     echo Khong tim thay file. Vui long thu lai.
