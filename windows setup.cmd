@@ -102,9 +102,9 @@ if /i "%format%"=="Y" (
     echo Invalid choice. Please enter Y, N or Z.
     goto FORMAT_EN
 )
-goto SELECT_WIM_EN
+goto FIND_WIM_EN
 
-:SELECT_WIM_EN
+:FIND_WIM_EN
 cls
 echo ==============================
 echo    WINDOWS INSTALLATION - ENGLISH
@@ -112,22 +112,30 @@ echo ==============================
 echo Selected Drive: %target_drive%
 echo Format Option: %format%
 echo.
-echo STEP 3: SELECT INSTALL.WIM
+echo STEP 3: FINDING INSTALL.WIM
 echo (Press Z to return to format option)
 echo ==============================
 echo.
-echo INSTRUCTIONS TO FIND INSTALL.WIM:
-echo 1. Right-click on Windows ISO file and select "Mount"
-echo 2. A new drive will appear (e.g. E:)
-echo 3. The file is typically in E:\sources\install.wim
-echo.
-set /p wim_path="Enter path to install.wim (e.g., E:\sources\install.wim), or Z to return: "
-if /i "%wim_path%"=="Z" goto FORMAT_EN
-if not exist "%wim_path%" (
-    echo File not found. Please try again.
-    goto SELECT_WIM_EN
+echo Searching for install.wim in %target_drive%\sources...
+set wim_path=%target_drive%\sources\install.wim
+
+if exist "%wim_path%" (
+    echo Found: %wim_path%
+    pause
+    goto CONFIRM_EN
+) else (
+    echo install.wim not found in %target_drive%\sources
+    echo Please mount Windows ISO and select the correct drive
+    echo.
+    set /p wim_path="Enter manual path to install.wim (e.g., E:\sources\install.wim), or Z to return: "
+    if /i "%wim_path%"=="Z" goto FORMAT_EN
+    if not exist "%wim_path%" (
+        echo File not found. Please try again.
+        pause
+        goto FIND_WIM_EN
+    )
+    goto CONFIRM_EN
 )
-goto CONFIRM_EN
 
 :CONFIRM_EN
 cls
@@ -142,7 +150,7 @@ echo Format Drive: %format%
 echo WIM Location: %wim_path%
 echo.
 set /p confirm="Start installation? (Y/N/Z): "
-if /i "%confirm%"=="Z" goto SELECT_WIM_EN
+if /i "%confirm%"=="Z" goto FIND_WIM_EN
 if /i "%confirm%"=="Y" (
     goto INSTALL
 ) else if /i "%confirm%"=="N" (
@@ -222,9 +230,9 @@ if /i "%format%"=="Y" (
     echo Lua chon khong hop le. Vui long nhap Y, N hoac Z.
     goto FORMAT_VI
 )
-goto SELECT_WIM_VI
+goto FIND_WIM_VI
 
-:SELECT_WIM_VI
+:FIND_WIM_VI
 cls
 echo ==============================
 echo    CAI DAT WINDOWS - TIENG VIET
@@ -232,22 +240,30 @@ echo ==============================
 echo O dia da chon: %target_drive%
 echo Tuy chon dinh dang: %format%
 echo.
-echo BUOC 3: CHON FILE INSTALL.WIM
+echo BUOC 3: TIM FILE INSTALL.WIM
 echo (Nhan Z de quay ve tuy chon dinh dang)
 echo ==============================
 echo.
-echo HUONG DAN TIM FILE INSTALL.WIM:
-echo 1. Click chuot phai vao file ISO va chon "Mount"
-echo 2. Mot o dia moi se xuat hien (vi du E:)
-echo 3. File can tim thuong o vi tri E:\sources\install.wim
-echo.
-set /p wim_path="Nhap duong dan den file install.wim (vi du: E:\sources\install.wim), hoac Z de quay ve: "
-if /i "%wim_path%"=="Z" goto FORMAT_VI
-if not exist "%wim_path%" (
-    echo Khong tim thay file. Vui long thu lai.
-    goto SELECT_WIM_VI
+echo Dang tim install.wim trong %target_drive%\sources...
+set wim_path=%target_drive%\sources\install.wim
+
+if exist "%wim_path%" (
+    echo Da tim thay: %wim_path%
+    pause
+    goto CONFIRM_VI
+) else (
+    echo Khong tim thay install.wim trong %target_drive%\sources
+    echo Vui long mount file ISO Windows va chon dung o dia
+    echo.
+    set /p wim_path="Nhap thu cong duong dan den install.wim (vi du: E:\sources\install.wim), hoac Z de quay ve: "
+    if /i "%wim_path%"=="Z" goto FORMAT_VI
+    if not exist "%wim_path%" (
+        echo Khong tim thay file. Vui long thu lai.
+        pause
+        goto FIND_WIM_VI
+    )
+    goto CONFIRM_VI
 )
-goto CONFIRM_VI
 
 :CONFIRM_VI
 cls
@@ -262,7 +278,7 @@ echo Dinh dang: %format%
 echo Vi tri WIM: %wim_path%
 echo.
 set /p confirm="Bat dau cai dat? (Y/N/Z): "
-if /i "%confirm%"=="Z" goto SELECT_WIM_VI
+if /i "%confirm%"=="Z" goto FIND_WIM_VI
 if /i "%confirm%"=="Y" (
     goto INSTALL
 ) else if /i "%confirm%"=="N" (
