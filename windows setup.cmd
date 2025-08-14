@@ -2,11 +2,17 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-:: Thiết lập màu xanh lá và cỡ chữ 20
+:: Thiết lập màu xanh lá
 color 0a
 title Windows Installation Script
 mode con: cols=100 lines=30
-powershell -command "&{$H=Get-Host;$W=$H.UI.RawUI;$B=$W.BufferSize;$B.Width=100;$B.Height=300;$S=$W.WindowSize;$S.Width=100;$S.Height=30;$W.FontSize=20}"
+
+:: Thay đổi cỡ chữ thành 20 thông qua Registry
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Console\TrueTypeFont" /v "000" /t REG_SZ /d "Lucida Console" /f >nul
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Console\RasterFonts" /v "000" /t REG_SZ /d "Terminal" /f >nul
+reg add "HKCU\Console" /v "FontSize" /t REG_DWORD /d 0x00140000 /f >nul
+reg add "HKCU\Console" /v "FontFamily" /t REG_DWORD /d 0x00000036 /f >nul
+reg add "HKCU\Console" /v "FaceName" /t REG_SZ /d "Lucida Console" /f >nul
 
 :MAIN_MENU
 cls
