@@ -1,258 +1,127 @@
 @echo off
-chcp 65001 >nul
-title Windows PE Installer - Song ngữ Anh Việt
+chcp 65001 > nul
+setlocal enabledelayedexpansion
 
-:: Biến ngôn ngữ (0=Tiếng Việt, 1=English)
-set lang=0
-
-:main_menu
+:MAIN_MENU
 cls
-if %lang%==0 (
-    echo ================================================
-    echo     CONG CU CAI DAT WINDOWS TREN WINDOWS PE
-    echo ================================================
-    echo.
-    echo Chon ngon ngu / Choose Language:
-    echo 1. Tieng Viet khong dau
-    echo 2. English
-    echo.
-    echo Chon tuy chon:
-    echo 3. Chon o cung de cai Windows
-    echo 4. Chon noi luu file install.wim
-    echo 5. Thoat
-    echo.
-) else (
-    echo ================================================
-    echo     WINDOWS INSTALLER TOOL FOR WINDOWS PE
-    echo ================================================
-    echo.
-    echo Choose Language:
-    echo 1. Vietnamese
-    echo 2. English
-    echo.
-    echo Select option:
-    echo 3. Select hard drive to install Windows
-    echo 4. Select install.wim file location
-    echo 5. Exit
-    echo.
-)
+echo -------------------------------
+echo    WINDOWS INSTALLATION TOOL
+echo    CONG CU CAI DAT WINDOWS
+echo -------------------------------
+echo 1. English
+echo 2. Tieng Viet
+echo -------------------------------
+set /p lang="Select your language/Chon ngon ngu (1/2): "
 
-set /p choice=">> "
+if "%lang%"=="1" goto ENGLISH
+if "%lang%"=="2" goto VIETNAMESE
+goto MAIN_MENU
 
-if "%choice%"=="1" (
-    set lang=0
-    goto main_menu
-)
-if "%choice%"=="2" (
-    set lang=1
-    goto main_menu
-)
-if "%choice%"=="3" goto select_drive
-if "%choice%"=="4" goto select_wim
-if "%choice%"=="5" goto exit_program
-if /i "%choice%"=="z" goto main_menu
+:ENGLISH
+set format_prompt=Do you want to format the drive? (y/n): 
+set drive_prompt=Select drive to install Windows (e.g., C, D): 
+set wim_prompt=Enter path to install.wim (e.g., E:\sources\install.wim): 
+set wim_guide=Guide: Right-click ISO file > Mount > Look in the mounted drive (e.g., if mounted as E:, path is E:\sources\install.wim)
+set back_option=Press 'z' to go back
+set invalid_option=Invalid selection
+set confirm_format=Are you sure you want to format drive %selected_drive%? ALL DATA WILL BE LOST! (y/n): 
+set formatting=Formatting drive %selected_drive%...
+set installing=Installing Windows to drive %selected_drive%...
+set success=Operation completed successfully!
+goto DRIVE_SELECT
 
-goto main_menu
+:VIETNAMESE
+set format_prompt=Ban co muon format o cung? (y/n): 
+set drive_prompt=Chon o cung de cai Windows (vi du: C, D): 
+set wim_prompt=Nhap duong dan toi file install.wim (vi du: E:\sources\install.wim): 
+set wim_guide=Huong dan: Chuot phai vao file iso > Mount > Tim o dia vua mount (vi du neu la o E:, duong dan se la E:\sources\install.wim)
+set back_option=Nhan 'z' de quay lai
+set invalid_option=Lua chon khong hop le
+set confirm_format=Ban co chac muon format o %selected_drive%? TOAN BO DU LIEU SE BI MAT! (y/n): 
+set formatting=Dang format o %selected_drive%...
+set installing=Dang cai Windows vao o %selected_drive%...
+set success=Hoan tat thanh cong!
+goto DRIVE_SELECT
 
-:select_drive
+:DRIVE_SELECT
 cls
-if %lang%==0 (
-    echo ================================================
-    echo         CHON O CUNG DE CAI WINDOWS
-    echo ================================================
-    echo.
-    echo Danh sach cac o dia co san:
-) else (
-    echo ================================================
-    echo      SELECT HARD DRIVE TO INSTALL WINDOWS
-    echo ================================================
-    echo.
-    echo Available drives:
+echo %back_option%
+echo -------------------------------
+echo %drive_prompt%
+echo -------------------------------
+wmic logicaldisk get caption
+echo -------------------------------
+set /p selected_drive="Drive/O cung: "
+
+if /i "%selected_drive%"=="z" goto MAIN_MENU
+if not exist "%selected_drive%:\" (
+    echo %invalid_option%
+    pause
+    goto DRIVE_SELECT
 )
 
-echo.
-wmic logicaldisk get size,freespace,caption
-echo.
-
-if %lang%==0 (
-    echo Nhap chu cai o dia (vi du: C):
-) else (
-    echo Enter drive letter (example: C):
-)
-
-set /p drive_letter=">> "
-
-if /i "%drive_letter%"=="z" goto main_menu
-
-:: Kiểm tra ổ đĩa có tồn tại không
-if not exist "%drive_letter%:\" (
-    if %lang%==0 (
-        echo O dia khong ton tai! Nhan phim bat ky de thu lai...
-    ) else (
-        echo Drive does not exist! Press any key to try again...
-    )
-    pause >nul
-    goto select_drive
-)
-
+:FORMAT_PROMPT
 cls
-if %lang%==0 (
-    echo Ban da chon o dia: %drive_letter%:
-    echo.
-    echo CANH BAO: Viec format se xoa toan bo du lieu tren o dia nay!
-    echo.
-    echo Ban co muon format o dia %drive_letter%: truoc khi cai dat khong?
-    echo Y ^(Yes^) - Co
-    echo N ^(No^) - Khong
-    echo z - Quay lai
-) else (
-    echo You selected drive: %drive_letter%:
-    echo.
-    echo WARNING: Formatting will delete all data on this drive!
-    echo.
-    echo Do you want to format drive %drive_letter%: before installation?
-    echo Y ^(Yes^) - Yes
-    echo N ^(No^) - No
-    echo z - Go back
-)
+echo %back_option%
+echo -------------------------------
+echo Drive/O cung: %selected_drive%
+echo %format_prompt%
+echo -------------------------------
+set /p format_answer="(y/n/z): "
 
-set /p format_choice=">> "
+if /i "%format_answer%"=="z" goto DRIVE_SELECT
+if /i "%format_answer%"=="y" goto CONFIRM_FORMAT
+if /i "%format_answer%"=="n" goto WIM_SELECT
+goto FORMAT_PROMPT
 
-if /i "%format_choice%"=="z" goto main_menu
-if /i "%format_choice%"=="y" goto format_drive
-if /i "%format_choice%"=="n" goto install_windows
-
-goto select_drive
-
-:format_drive
-if %lang%==0 (
-    echo Dang format o dia %drive_letter%:...
-    echo Vui long cho...
-) else (
-    echo Formatting drive %drive_letter%:...
-    echo Please wait...
-)
-
-format %drive_letter%: /fs:NTFS /q /y
-
-if %errorlevel%==0 (
-    if %lang%==0 (
-        echo Format thanh cong!
-    ) else (
-        echo Format successful!
-    )
-) else (
-    if %lang%==0 (
-        echo Loi khi format o dia!
-    ) else (
-        echo Error formatting drive!
-    )
-)
-
-pause
-goto install_windows
-
-:install_windows
-if %lang%==0 (
-    echo Chuan bi cai dat Windows len o dia %drive_letter%:...
-    echo Day chi la demo - can them code de apply install.wim
-) else (
-    echo Preparing to install Windows on drive %drive_letter%:...
-    echo This is demo - need additional code to apply install.wim
-)
-
-pause
-goto main_menu
-
-:select_wim
+:CONFIRM_FORMAT
 cls
-if %lang%==0 (
-    echo ================================================
-    echo       CHON NOI LUU FILE INSTALL.WIM
-    echo ================================================
-    echo.
-    echo HUONG DAN:
-    echo 1. Chuot phai file ISO Windows
-    echo 2. Chon "Mount" ^(gan ket^)
-    echo 3. Tim o dia vua duoc gan ket
-    echo 4. Neu la o dia E: thi duong dan se la: E:\sources\install.wim
-    echo.
-    echo Nhap duong dan day du den file install.wim:
-    echo Vi du: E:\sources\install.wim
-    echo.
-    echo z - Quay lai
-) else (
-    echo ================================================
-    echo        SELECT INSTALL.WIM FILE LOCATION
-    echo ================================================
-    echo.
-    echo INSTRUCTIONS:
-    echo 1. Right-click on Windows ISO file
-    echo 2. Select "Mount"
-    echo 3. Find the mounted drive
-    echo 4. If mounted as drive E: then path will be: E:\sources\install.wim
-    echo.
-    echo Enter full path to install.wim file:
-    echo Example: E:\sources\install.wim
-    echo.
-    echo z - Go back
+echo %back_option%
+echo -------------------------------
+echo %confirm_format%
+echo -------------------------------
+set /p confirm_answer="(y/n/z): "
+
+if /i "%confirm_answer%"=="z" goto FORMAT_PROMPT
+if /i "%confirm_answer%"=="n" goto FORMAT_PROMPT
+if /i "%confirm_answer%"=="y" (
+    echo %formatting%
+    format %selected_drive%: /FS:NTFS /Q /Y > nul
+    goto WIM_SELECT
 )
+goto CONFIRM_FORMAT
 
-set /p wim_path=">> "
+:WIM_SELECT
+cls
+echo %back_option%
+echo -------------------------------
+echo %wim_guide%
+echo -------------------------------
+echo %wim_prompt%
+echo -------------------------------
+set /p wim_path="Path/Duong dan: "
 
-if /i "%wim_path%"=="z" goto main_menu
-
-:: Kiểm tra file có tồn tại không
+if /i "%wim_path%"=="z" goto FORMAT_PROMPT
 if not exist "%wim_path%" (
-    if %lang%==0 (
-        echo File khong ton tai! Nhan phim bat ky de thu lai...
-    ) else (
-        echo File does not exist! Press any key to try again...
-    )
-    pause >nul
-    goto select_wim
+    echo %invalid_option%: File not found
+    pause
+    goto WIM_SELECT
 )
 
-if %lang%==0 (
-    echo File install.wim da duoc tim thay: %wim_path%
-    echo.
-    echo Thong tin file WIM:
-) else (
-    echo install.wim file found: %wim_path%
-    echo.
-    echo WIM file information:
-)
+:INSTALL_CONFIRM
+cls
+echo -------------------------------
+echo Drive/O cung: %selected_drive%
+echo WIM path/Duong dan WIM: %wim_path%
+echo -------------------------------
+echo %installing%
+echo -------------------------------
+:: Thực hiện lệnh cài đặt Windows ở đây
+:: Ví dụ: dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%selected_drive%:\
 
-dism /get-wiminfo /wimfile:"%wim_path%"
+:: Giả lập quá trình cài đặt
+ping -n 3 127.0.0.1 > nul
 
-if %lang%==0 (
-    echo.
-    echo Nhan phim bat ky de quay lai menu chinh...
-) else (
-    echo.
-    echo Press any key to return to main menu...
-)
-
-pause >nul
-goto main_menu
-
-:exit_program
-if %lang%==0 (
-    echo Cam on ban da su dung cong cu cai dat Windows PE!
-    echo Nhan phim bat ky de thoat...
-) else (
-    echo Thank you for using Windows PE installer tool!
-    echo Press any key to exit...
-)
-
-pause >nul
-exit
-
-:error
-if %lang%==0 (
-    echo Da xay ra loi! Vui long thu lai.
-) else (
-    echo An error occurred! Please try again.
-)
+echo %success%
 pause
-goto main_menu
+goto MAIN_MENU
