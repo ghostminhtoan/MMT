@@ -2,11 +2,10 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
-:: Thiết lập font và màu sắc
-mode con: cols=100 lines=40
+:: Thiết lập màu xanh lá (nền đen chữ xanh lá)
 color 0a
+mode con: cols=100 lines=40
 title Windows Installation Script
-powershell -command "&{$H=Get-WindowHandle;$I=Get-Process -Id $H;$I.MainWindowTitle='Windows Installation Script';$ST=New-Object -TypeName System.Drawing.Font -ArgumentList 'Consolas',28;[System.Console]::OutputEncoding=[System.Text.Encoding]::UTF8}"
 
 :MAIN_MENU
 cls
@@ -48,7 +47,7 @@ echo (excluding X: and CD drives)
 echo.
 
 set count=0
-for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename') do (
+for /f "skip=1 tokens=1-4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename 2^>nul') do (
     if "%%a" neq "" (
         if /i not "%%a"=="X:" (
             if /i not "%%b"=="CD-ROM" (
@@ -57,7 +56,7 @@ for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,d
                 
                 :: Convert bytes to GB
                 set size=%%c
-                if "!size!" neq "" (
+                if defined size (
                     set /a size_gb=!size!/1073741824
                 ) else (
                     set size_gb=0
@@ -67,6 +66,13 @@ for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,d
             )
         )
     )
+)
+
+if %count% equ 0 (
+    echo No available drives found!
+    echo Khong tim thay o dia nao!
+    pause
+    goto MAIN_MENU
 )
 
 :SELECT_DRIVE_EN
@@ -165,7 +171,7 @@ echo (khong bao gom o X: va o CD)
 echo.
 
 set count=0
-for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename') do (
+for /f "skip=1 tokens=1-4 delims= " %%a in ('wmic logicaldisk get caption^,description^,size^,volumename 2^>nul') do (
     if "%%a" neq "" (
         if /i not "%%a"=="X:" (
             if /i not "%%b"=="CD-ROM" (
@@ -174,7 +180,7 @@ for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,d
                 
                 :: Chuyen doi bytes sang GB
                 set size=%%c
-                if "!size!" neq "" (
+                if defined size (
                     set /a size_gb=!size!/1073741824
                 ) else (
                     set size_gb=0
@@ -184,6 +190,13 @@ for /f "skip=1 tokens=1,2,3,4 delims= " %%a in ('wmic logicaldisk get caption^,d
             )
         )
     )
+)
+
+if %count% equ 0 (
+    echo No available drives found!
+    echo Khong tim thay o dia nao!
+    pause
+    goto MAIN_MENU
 )
 
 :SELECT_DRIVE_VI
