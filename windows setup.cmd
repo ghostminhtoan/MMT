@@ -15,7 +15,7 @@ set /p choice="Lua chon cua ban (1-2, z de quay ve menu): "
 
 if "%choice%"=="1" goto INSTALL_WINDOWS
 if "%choice%"=="2" exit
-if "%choice%"=="z" goto MAIN_MENU
+if /i "%choice%"=="z" goto MAIN_MENU
 echo Lua chon khong hop le, vui long thu lai...
 pause
 goto MAIN_MENU
@@ -29,18 +29,21 @@ echo ==============================
 echo.
 
 :SELECT_INSTALL_DRIVE
-echo Chon o dia de cai dat Windows:
+echo Danh sach o dia kha dung:
 echo.
-for /f "tokens=1,2 delims= " %%a in ('wmic logicaldisk get caption^,description^,size ^| find "Fixed"') do (
+for /f "skip=1 tokens=1,3" %%a in ('wmic logicaldisk get caption^,size^,description ^| find "Local Fixed Disk"') do (
     set drive=%%a
     set size=%%b
-    set size=!size:~0,-9!
-    set /a sizeGB=!size!/1073741824
-    echo !drive! - !sizeGB! GB
+    if "!size!" neq "" (
+        set /a sizeGB=!size!/1073741824
+        echo !drive! - !sizeGB! GB
+    ) else (
+        echo !drive! - Kich thuoc khong xac dinh
+    )
 )
 echo.
-set /p install_drive="Nhap o dia (vi du: C, D,...), z de quay ve: "
-if "%install_drive%"=="z" goto MAIN_MENU
+set /p install_drive="Nhap o dia cai dat (VD: C, D,...), z de quay ve: "
+if /i "%install_drive%"=="z" goto MAIN_MENU
 if not exist %install_drive%:\ (
     echo O dia khong ton tai!
     pause
@@ -50,7 +53,7 @@ if not exist %install_drive%:\ (
 :ASK_FORMAT
 echo.
 set /p format_drive="Ban co muon format o dia %install_drive%: khong? (y/n, z de quay ve): "
-if "%format_drive%"=="z" goto MAIN_MENU
+if /i "%format_drive%"=="z" goto MAIN_MENU
 if /i "%format_drive%"=="y" (
     echo Dang format o dia %install_drive%:...
     format %install_drive%: /FS:NTFS /Q /Y
@@ -60,45 +63,69 @@ if /i "%format_drive%"=="y" (
         goto ASK_FORMAT
     )
     echo Format thanh cong!
+    pause
 ) else if /i not "%format_drive%"=="n" (
     echo Lua chon khong hop le!
     goto ASK_FORMAT
 )
 
-:SELECT_ISO_FILE
+:SELECT_WIM_FILE
 echo.
-echo Hay chon file ISO Windows:
-set "iso_path="
-for /f "delims=" %%I in ('powershell -command "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; $openFileDialog = New-Object System.Windows.Forms.OpenFileDialog; $openFileDialog.Filter = 'ISO files (*.iso)|*.iso|All files (*.*)|*.*'; $openFileDialog.Title = 'Chon file ISO Windows'; if($openFileDialog.ShowDialog() -eq 'OK') { Write-Output $openFileDialog.FileName }"') do set "iso_path=%%I"
-
-if not defined iso_path (
-    echo Khong co file ISO nao duoc chon!
+echo Hay nhap duong dan den file install.wim
+echo Vi du: D:\sources\install.wim
+echo.
+set /p wim_path="Nhap duong dan (z de quay ve): "
+if /i "%wim_path%"=="z" goto MAIN_MENU
+if not exist "%wim_path%" (
+    echo File WIM khong ton tai!
     pause
-    goto SELECT_ISO_FILE
+    goto SELECT_WIM_FILE
 )
 
+:CONFIRM_INSTALL
+cls
 echo.
-echo Thong tin cai dat:
-echo O dia: %install_drive%:
-echo File ISO: %iso_path%
+echo ==============================
+echo    XAC NHAN THONG TIN CAI DAT
+echo ==============================
 echo.
-
+echo O dia cai dat:    %install_drive%:
+echo File WIM:         %wim_path%
+echo.
 set /p confirm="Ban co chac chan muon cai dat? (y/n, z de quay ve): "
-if "%confirm%"=="z" goto MAIN_MENU
-if /i "%confirm%"=="y" (
-    echo Dang giai nen file ISO...
-    powershell Mount-DiskImage -ImagePath "%iso_path%"
-    
-    for /f "tokens=1" %%d in ('powershell "(Get-DiskImage -ImagePath \"%iso_path%\").DriveLetter"') do set "iso_drive=%%d"
-    
-    echo Dang cai dat Windows tu %iso_drive%: vao %install_drive%:...
-    xcopy %iso_drive%:\*.* %install_drive%:\ /E /H /K
-    
-    echo Cai dat hoan tat!
-    pause
-) else (
+if /i "%confirm%"=="z" goto MAIN_MENU
+if /i "%confirm%"=="n" (
     echo Da huy qua trinh cai dat!
     pause
+    goto MAIN_MENU
+)
+if /i not "%confirm%"=="y" (
+    echo Lua chon khong hop le!
+    pause
+    goto CONFIRM_INSTALL
 )
 
+:START_INSTALL
+echo.
+echo Dang cai dat Windows...
+echo Su dung file: %wim_path%
+echo Len o dia: %install_drive%:
+echo.
+
+dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
+
+if errorlevel 1 (
+    echo Co loi xay ra trong qua trinh cai dat!
+    pause
+    goto MAIN_MENU
+)
+
+echo.
+echo Da cai dat thanh cong!
+echo Dang tao boot sector...
+bootsect /nt60 %install_drive%: /force /mbr
+
+echo.
+echo Hoan tat qua trinh cai dat!
+pause
 goto MAIN_MENU
