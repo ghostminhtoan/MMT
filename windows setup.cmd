@@ -1,7 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
-color a0
+color 0a
 cls
+
+:: Kiểm tra WinPE
+wpeutil UpdateBootInfo >nul 2>&1
+if not errorlevel 1 set WINPE=YES
 
 :MAIN_MENU
 echo.
@@ -17,7 +21,7 @@ set /p choice="   Lua chon cua ban (1-2, z de quay ve menu): "
 if "%choice%"=="1" goto INSTALL_WINDOWS
 if "%choice%"=="2" exit
 if /i "%choice%"=="z" goto MAIN_MENU
-echo    Lua chon khong hop le, vui long thu lai...
+echo    Lua chon khong hop le!
 timeout /t 2 >nul
 goto MAIN_MENU
 
@@ -32,7 +36,7 @@ echo.
 :SELECT_INSTALL_DRIVE
 echo   Danh sach o dia kha dung:
 echo.
-for /f "skip=1 tokens=1,3" %%a in ('wmic logicaldisk get caption^,size^,description ^| find "Local Fixed Disk"') do (
+for /f "skip=1 tokens=1,3" %%a in ('wmic logicaldisk get caption^,size^,description ^| find "Fixed"') do (
     set drive=%%a
     set size=%%b
     if "!size!" neq "" (
@@ -83,31 +87,52 @@ if not exist "%iso_path%" (
     goto SELECT_ISO_FILE
 )
 
-:MOUNT_ISO
-echo    Dang mount file ISO...
-echo    Luu y: Can thuc hien tren WinPE voi quyen Administrator
+:MOUNT_ISO_WINPE
+if defined WINPE (
+    echo    Dang mount file ISO (phuong phap WinPE)...
+    
+    :: Tạo ổ đĩa ảo bằng ImDisk
+    for /f "tokens=2 delims==" %%d in ('wmic volume get DriveLetter /value ^| findstr /r /v "^$"') do (
+        set "last_drive=%%d"
+    )
+    set /a next_drive=!last_drive:~0,1!+1
+    set "mount_drive=!next_drive!:"
+    
+    imdisk -a -f "%iso_path%" -m %mount_drive% >nul 2>&1
+    if errorlevel 1 (
+        echo    Khong the mount ISO bang ImDisk!
+        echo    Co the do:
+        echo    - Thieu tien ich ImDisk trong WinPE
+        echo    - File ISO bi hong
+        timeout /t 5 >nul
+        goto SELECT_ISO_FILE
+    )
+    
+    set "iso_drive=%mount_drive%"
+    goto FIND_WIM_FILE
+)
 
-rem Tạo script tạm cho diskpart
-echo select vdisk file="%iso_path%" > %temp%\mount_iso.txt
-echo attach vdisk >> %temp%\mount_iso.txt
-echo list volume >> %temp%\mount_iso.txt
-echo exit >> %temp%\mount_iso.txt
+:MOUNT_ISO_NORMAL
+echo    Dang mount file ISO (phuong phap DiskPart)...
+(
+    echo select vdisk file="%iso_path%"
+    echo attach vdisk
+    echo list volume
+    echo exit
+) > %temp%\mount_iso.txt
 
-diskpart /s %temp%\mount_iso.txt > %temp%\diskpart_output.txt
+diskpart /s %temp%\mount_iso.txt > %temp%\diskpart_out.txt
 del %temp%\mount_iso.txt
 
-rem Tìm ổ đĩa được mount
-set "iso_drive="
-for /f "tokens=2,3,4" %%a in ('type %temp%\diskpart_output.txt ^| find "DVD"') do (
+for /f "tokens=2,3" %%a in ('type %temp%\diskpart_out.txt ^| find "DVD"') do (
     set "iso_drive=%%a"
 )
 
 if not defined iso_drive (
-    echo    Khong the xac dinh o dia ISO!
+    echo    Khong the mount file ISO!
     echo    Co the do:
-    echo    - File ISO bi hong
-    echo    - WinPE khong ho tro mount ISO
-    echo    - Thieu quyen Administrator
+    echo    - Khong co quyen Administrator
+    echo    - File ISO khong hop le
     timeout /t 5 >nul
     goto SELECT_ISO_FILE
 )
@@ -116,11 +141,17 @@ if not defined iso_drive (
 set "wim_path=%iso_drive%:\sources\install.wim"
 if not exist "%wim_path%" (
     echo    Khong tim thay file install.wim trong %wim_path%!
-    echo select vdisk file="%iso_path%" > %temp%\unmount_iso.txt
-    echo detach vdisk >> %temp%\unmount_iso.txt
-    echo exit >> %temp%\unmount_iso.txt
-    diskpart /s %temp%\unmount_iso.txt
-    del %temp%\unmount_iso.txt
+    
+    if defined WINPE (
+        imdisk -d -m %iso_drive% >nul 2>&1
+    ) else (
+        echo select vdisk file="%iso_path%" > %temp%\unmount.txt
+        echo detach vdisk >> %temp%\unmount.txt
+        echo exit >> %temp%\unmount.txt
+        diskpart /s %temp%\unmount.txt
+        del %temp%\unmount.txt
+    )
+    
     timeout /t 2 >nul
     goto SELECT_ISO_FILE
 )
@@ -137,23 +168,10 @@ echo   File ISO:         %iso_path%
 echo   File WIM:         %wim_path%
 echo.
 set /p confirm="   Ban co chac chan muon cai dat? (y/n, z de quay ve): "
-if /i "%confirm%"=="z" (
-    echo select vdisk file="%iso_path%" > %temp%\unmount_iso.txt
-    echo detach vdisk >> %temp%\unmount_iso.txt
-    echo exit >> %temp%\unmount_iso.txt
-    diskpart /s %temp%\unmount_iso.txt
-    del %temp%\unmount_iso.txt
-    goto MAIN_MENU
-)
+if /i "%confirm%"=="z" goto UNMOUNT_AND_RETURN
 if /i "%confirm%"=="n" (
     echo    Da huy qua trinh cai dat!
-    echo select vdisk file="%iso_path%" > %temp%\unmount_iso.txt
-    echo detach vdisk >> %temp%\unmount_iso.txt
-    echo exit >> %temp%\unmount_iso.txt
-    diskpart /s %temp%\unmount_iso.txt
-    del %temp%\unmount_iso.txt
-    timeout /t 2 >nul
-    goto MAIN_MENU
+    goto UNMOUNT_AND_RETURN
 )
 if /i not "%confirm%"=="y" (
     echo    Lua chon khong hop le!
@@ -164,21 +182,12 @@ if /i not "%confirm%"=="y" (
 :START_INSTALL
 echo.
 echo   Dang cai dat Windows...
-echo   Su dung file: %wim_path%
-echo   Len o dia: %install_drive%:
-echo.
-
 dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
 
 if errorlevel 1 (
     echo    Co loi xay ra trong qua trinh cai dat!
-    echo select vdisk file="%iso_path%" > %temp%\unmount_iso.txt
-    echo detach vdisk >> %temp%\unmount_iso.txt
-    echo exit >> %temp%\unmount_iso.txt
-    diskpart /s %temp%\unmount_iso.txt
-    del %temp%\unmount_iso.txt
     pause
-    goto MAIN_MENU
+    goto UNMOUNT_AND_RETURN
 )
 
 echo.
@@ -186,11 +195,18 @@ echo   Da cai dat thanh cong!
 echo   Dang tao boot sector...
 bootsect /nt60 %install_drive%: /force /mbr
 
-echo select vdisk file="%iso_path%" > %temp%\unmount_iso.txt
-echo detach vdisk >> %temp%\unmount_iso.txt
-echo exit >> %temp%\unmount_iso.txt
-diskpart /s %temp%\unmount_iso.txt
-del %temp%\unmount_iso.txt
+:UNMOUNT_AND_RETURN
+if defined iso_drive (
+    if defined WINPE (
+        imdisk -d -m %iso_drive% >nul 2>&1
+    ) else (
+        echo select vdisk file="%iso_path%" > %temp%\unmount.txt
+        echo detach vdisk >> %temp%\unmount.txt
+        echo exit >> %temp%\unmount.txt
+        diskpart /s %temp%\unmount.txt
+        del %temp%\unmount.txt
+    )
+)
 
 echo.
 echo   Hoan tat qua trinh cai dat!
