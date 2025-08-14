@@ -4,7 +4,6 @@ color 0a
 cls
 
 :MAIN_MENU
-cls
 echo.
 echo   ==============================
 echo      WINDOWS INSTALLATION TOOL
@@ -85,16 +84,12 @@ echo      CHON FILE INSTALL.WIM
 echo   ==============================
 echo.
 echo   HUONG DAN:
-echo   1. Mount file ISO bang cach:
-echo      - Click chuot phai vao file ISO
-echo      - Chon "Mount"
-echo   2. Mo o dia ao moi xuat hien
-echo   3. Di den thu muc \sources
-echo   4. Copy duong dan cua file install.wim
+echo   1. Mount file ISO bang cach click chuot phai -> Mount
+echo   2. Vao o dia ao moi xuat hien
+echo   3. Tim file install.wim trong thu muc \sources
+echo   4. Nhap duong dan day du (VD: E:\sources\install.wim)
 echo.
-echo   Vi du: E:\sources\install.wim
-echo.
-set /p wim_path="   Nhap duong dan day du den file install.wim (z de quay ve): "
+set /p wim_path="   Nhap duong dan file install.wim (z de quay ve): "
 if /i "%wim_path%"=="z" goto MAIN_MENU
 if not exist "%wim_path%" (
     echo    File WIM khong ton tai!
