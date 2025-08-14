@@ -1,8 +1,4 @@
 @echo off
-:: Thiet lap encoding cho Windows PE
-for /f "tokens=2 delims=:" %%a in ('chcp') do set "original_cp=%%a"
-chcp 1258 >nul 2>&1
-if errorlevel 1 chcp 65001 >nul 2>&1
 setlocal enabledelayedexpansion
 
 :: Bien ngon ngu mac dinh
