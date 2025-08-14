@@ -70,62 +70,19 @@ if /i "%format_drive%"=="y" (
     goto ASK_FORMAT
 )
 
-:SELECT_ISO_FILE
+:SELECT_WIM_FILE
 echo.
-echo   Hay nhap duong dan den file ISO Windows
-echo   Vi du: D:\win10.iso
+echo   Hay nhap duong dan day du den file install.wim
+echo   Vi du: D:\sources\install.wim
+echo   Hoac: X:\path\to\install.wim
 echo.
-set /p iso_path="   Nhap duong dan (z de quay ve): "
-if /i "%iso_path%"=="z" goto MAIN_MENU
-if not exist "%iso_path%" (
-    echo    File ISO khong ton tai!
-    timeout /t 2 >nul
-    goto SELECT_ISO_FILE
-)
-
-:MOUNT_ISO_WITH_DISKPART
-echo    Dang mount file ISO bang DISKPART...
-(
-    echo select vdisk file="%iso_path%"
-    echo attach vdisk
-    echo list volume
-    echo exit
-) > %temp%\mount_iso.txt
-
-diskpart /s %temp%\mount_iso.txt > %temp%\diskpart_out.txt
-del %temp%\mount_iso.txt
-
-set "iso_drive="
-for /f "tokens=2 delims= " %%d in ('type %temp%\diskpart_out.txt ^| find "DVD"') do (
-    set "iso_drive=%%d:"
-)
-
-if not defined iso_drive (
-    echo    KHONG THE MOUNT FILE ISO!
-    echo    Nguyen nhan co the:
-    echo    1. Duong dan ISO chua khoang trang (can dat trong dau "")
-    echo    2. WinPE thieu driver can thiet
-    echo    3. File ISO bi hong
-    echo.
-    echo    Noi dung loi:
-    type %temp%\diskpart_out.txt
-    timeout /t 10 >nul
-    goto SELECT_ISO_FILE
-)
-
-:FIND_WIM_FILE
-set "wim_path=%iso_drive%\sources\install.wim"
+set /p wim_path="   Nhap duong dan file install.wim (z de quay ve): "
+if /i "%wim_path%"=="z" goto MAIN_MENU
 if not exist "%wim_path%" (
-    echo    Khong tim thay file install.wim trong %wim_path%!
-    
-    echo select vdisk file="%iso_path%" > %temp%\unmount.txt
-    echo detach vdisk >> %temp%\unmount.txt
-    echo exit >> %temp%\unmount.txt
-    diskpart /s %temp%\unmount.txt
-    del %temp%\unmount.txt
-    
+    echo    File WIM khong ton tai!
+    echo    Vui long kiem tra lai duong dan
     timeout /t 3 >nul
-    goto SELECT_ISO_FILE
+    goto SELECT_WIM_FILE
 )
 
 :CONFIRM_INSTALL
@@ -136,14 +93,14 @@ echo      XAC NHAN THONG TIN CAI DAT
 echo   ==============================
 echo.
 echo   O dia cai dat:    %install_drive%:
-echo   File ISO:         %iso_path%
 echo   File WIM:         %wim_path%
 echo.
 set /p confirm="   Ban co chac chan muon cai dat? (y/n, z de quay ve): "
-if /i "%confirm%"=="z" goto UNMOUNT_AND_RETURN
+if /i "%confirm%"=="z" goto MAIN_MENU
 if /i "%confirm%"=="n" (
     echo    Da huy qua trinh cai dat!
-    goto UNMOUNT_AND_RETURN
+    timeout /t 2 >nul
+    goto MAIN_MENU
 )
 if /i not "%confirm%"=="y" (
     echo    Lua chon khong hop le!
@@ -154,27 +111,23 @@ if /i not "%confirm%"=="y" (
 :START_INSTALL
 echo.
 echo   Dang cai dat Windows...
+echo   File WIM: %wim_path%
+echo   O dia: %install_drive%:
+echo.
+
 dism /apply-image /imagefile:"%wim_path%" /index:1 /applydir:%install_drive%:\
 
 if errorlevel 1 (
-    echo    LOI: Cai dat that bai!
+    echo    Co loi xay ra trong qua trinh cai dat!
+    echo    Ma loi: %errorlevel%
     pause
-    goto UNMOUNT_AND_RETURN
+    goto MAIN_MENU
 )
 
 echo.
 echo   Da cai dat thanh cong!
 echo   Dang tao boot sector...
 bootsect /nt60 %install_drive%: /force /mbr
-
-:UNMOUNT_AND_RETURN
-if defined iso_drive (
-    echo select vdisk file="%iso_path%" > %temp%\unmount.txt
-    echo detach vdisk >> %temp%\unmount.txt
-    echo exit >> %temp%\unmount.txt
-    diskpart /s %temp%\unmount.txt
-    del %temp%\unmount.txt
-)
 
 echo.
 echo   Hoan tat qua trinh cai dat!
