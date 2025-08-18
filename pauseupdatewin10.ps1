@@ -1,5 +1,5 @@
 $pause = (Get-Date).AddDays(9999)
-$pause = $pause.ToUniversalTime().ToString( "8888-12-30T23:59:59Z" )
+$pause = $pause.ToUniversalTime().ToString( "9999-12-30T23:59:59Z" )
 $pause_start = (Get-Date)
 $pause_start = $pause_start.ToUniversalTime().ToString( "yyyy-MM-ddTHH:mm:ssZ" )
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings' -Name 'PauseUpdatesExpiryTime' -Value $pause                                                                                        
