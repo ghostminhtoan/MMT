@@ -22,16 +22,9 @@ if isrealtimeenabled then
     wshshell.sendkeys " "
     wscript.sleep 500
 
-    ' gui 4 phim tab de di chuyen den tamper protection
-    for i = 1 to 4
-        wshshell.sendkeys "{tab}"
-        wscript.sleep 200
-    next
-
-    ' gui phim space de tat tamper protection (neu can)
-    wshshell.sendkeys " "
     
-    msgbox "da tat real-time protection va tamper protection.", vbinformation, "thong bao"
+    msgbox "da tat real-time protection.", vbinformation, "thong bao"
 else
     msgbox "real-time protection da tat, khong can thao tac.", vbinformation, "thong bao"
+
 end if
