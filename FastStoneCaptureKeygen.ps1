@@ -7,12 +7,12 @@
 
 # 1. Tai va cai dat FastStone Capture Keygen
 Write-Host "Dang tai va cai dat FastStone Capture Keygen..."
-$keygenInstaller = "$env:TEMP\FastStoneKeygen.exe"
+$keygeninstaller = "$env:TEMP\keygen.exe"
 try {
-    Invoke-RestMethod "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/FastStone%20Capture%20Keygen.exe" -OutFile $keygenInstaller
-    $process = Start-Process -FilePath $keygenInstaller -PassThru
+    Invoke-RestMethod "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/FastStone%20Capture%20Keygen.exe" -OutFile $keygeninstaller
+    $process = Start-Process -FilePath $keygeninstaller -PassThru
     $process.WaitForExit()
-    Remove-Item $keygenInstaller -Force
+    Remove-Item $keygeninstaller -Force
     Write-Host "Da cai dat FastStone Capture Keygen thanh cong" -ForegroundColor Green
 }
 catch {
