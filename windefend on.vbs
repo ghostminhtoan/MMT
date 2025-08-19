@@ -23,7 +23,8 @@ if not isrealtimeenabled then
     wscript.sleep 500
 
     
-    msgbox "Da bat real-time protection va tamper protection.", vbinformation, "Thong bao"
+    msgbox "Da bat real-time protection.", vbinformation, "Thong bao"
 else
     msgbox "Real-time protection dang bat, khong can thao tac.", vbinformation, "Thong bao"
 end if
+
