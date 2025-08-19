@@ -1,27 +1,30 @@
-<#
-.SYNOPSIS
-    Script cai dat FastStone Capture Keygen
-.DESCRIPTION
-    Thuc hien tai va cai dat FastStone Capture Keygen
-#>
+# Define the URL and destination path
+$url = "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/FastStone%20Capture%20Keygen.exe"
+$dest = "$env:TEMP\FastStoneCaptureKeygen.exe"
 
-# 1. Tai va cai dat FastStone Capture Keygen
-Write-Host "Dang tai va cai dat FastStone Capture Keygen..."
-$keygeninstaller = "$env:TEMP\keygen.exe"
 try {
-    Invoke-RestMethod "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/FastStone%20Capture%20Keygen.exe" -OutFile $keygeninstaller
-    $process = Start-Process -FilePath $keygeninstaller -PassThru
+    # Download the file
+    Write-Host "Downloading file..."
+    Invoke-WebRequest -Uri $url -OutFile $dest
+    
+    # Execute the file
+    Write-Host "Running the executable..."
+    $process = Start-Process -FilePath $dest -PassThru
+    
+    # Wait for the process to exit
     $process.WaitForExit()
-    Remove-Item $keygeninstaller -Force
-    Write-Host "Da cai dat FastStone Capture Keygen thanh cong" -ForegroundColor Green
+    
+    # Delete the file
+    Write-Host "Deleting the file..."
+    Remove-Item -Path $dest -Force
+    
+    Write-Host "Operation completed successfully."
 }
 catch {
-    Write-Host "Loi khi cai dat FastStone Capture Keygen: $_" -ForegroundColor Red
+    Write-Host "An error occurred: $_"
+    
+    # Attempt to delete the file if it exists (in case of partial download or execution failure)
+    if (Test-Path $dest) {
+        Remove-Item -Path $dest -Force -ErrorAction SilentlyContinue
+    }
 }
-
-Write-Host "Hoan tat thao tac" -ForegroundColor Cyan
-
-# Tu dong thoat sau 1 giay
-Write-Host "Script se tu dong dong trong 1 giay..." -ForegroundColor Yellow
-Start-Sleep -Seconds 1
-exit
