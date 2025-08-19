@@ -27,7 +27,7 @@ catch {
 Write-Host "Dang tai va cai dat IDM crack..."
 $idmInstaller = "$env:TEMP\idm_crack.exe"
 try {
-    Invoke-RestMethod "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/IDM_6.4x_Crack_v19.7.exe" -OutFile $idmInstaller
+    Invoke-RestMethod "https://raw.githubusercontent.com/ghostminhtoan/MMT/refs/heads/main/IDM_6.4x_Crack.exe" -OutFile $idmInstaller
     $process = Start-Process -FilePath $idmInstaller -PassThru
     $process.WaitForExit()
     Remove-Item $idmInstaller -Force
