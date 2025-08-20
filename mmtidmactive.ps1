@@ -1,9 +1,9 @@
-# Cấu hình console
+# Cau hinh console
 $Host.UI.RawUI.WindowTitle = "IDM Manager"
 $Host.UI.RawUI.ForegroundColor = "Green"
 $Host.UI.RawUI.BackgroundColor = "Black"
 
-# Thiết lập font và size (chỉ hoạt động trên Windows Terminal)
+# Thiet lap font va size (chi hoat dong tren Windows Terminal)
 try {
     if ($Host.Name -eq "ConsoleHost") {
         $console = $Host.UI.RawUI
@@ -11,28 +11,28 @@ try {
         $console.FontSize = 28
     }
 } catch {
-    Write-Host "Không thể thay đổi font chữ. Tiếp tục với font mặc định..." -ForegroundColor Yellow
+    Write-Host "Khong the thay doi font chu. Tiep tuc voi font mac dinh..." -ForegroundColor Yellow
 }
 
-# Hàm hiển thị menu
+# Ham hien thi menu
 function Show-Menu {
     Clear-Host
     Write-Host "==========================================" -ForegroundColor Green
     Write-Host "           IDM MANAGER MENU" -ForegroundColor Green
     Write-Host "==========================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "1. Tải và cài đặt IDM" -ForegroundColor Green
-    Write-Host "2. Kích hoạt IDM" -ForegroundColor Green
-    Write-Host "3. Thoát" -ForegroundColor Green
+    Write-Host "1. Tai va cai dat IDM" -ForegroundColor Green
+    Write-Host "2. Kich hoat IDM" -ForegroundColor Green
+    Write-Host "3. Thoat" -ForegroundColor Green
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Green
 }
 
-# Hàm tải và cài đặt IDM
+# Ham tai va cai dat IDM
 function Install-IDM {
-    Write-Host "Đang tải IDM..." -ForegroundColor Yellow
+    Write-Host "Dang tai IDM..." -ForegroundColor Yellow
     
-    # Tạo thư mục tạm nếu chưa tồn tại
+    # Tao thu muc tam neu chua ton tai
     $tempDir = "C:\Temp"
     if (!(Test-Path $tempDir)) {
         New-Item -Path $tempDir -ItemType Directory -Force | Out-Null
@@ -42,62 +42,62 @@ function Install-IDM {
     $installerPath = "$tempDir\idm_setup.exe"
     
     try {
-        # Tải file
-        Write-Host "Đang tải từ: $downloadUrl" -ForegroundColor Gray
+        # Tai file
+        Write-Host "Dang tai tu: $downloadUrl" -ForegroundColor Gray
         $progressPreference = 'silentlyContinue'
         Invoke-WebRequest -Uri $downloadUrl -OutFile $installerPath -UserAgent "Mozilla/5.0"
         $progressPreference = 'Continue'
         
         if (Test-Path $installerPath) {
-            Write-Host "Đã tải xong. Đang cài đặt IDM..." -ForegroundColor Yellow
+            Write-Host "Da tai xong. Dang cai dat IDM..." -ForegroundColor Yellow
             
-            # Cài đặt với các tham số
+            # Cai dat voi cac tham so
             $process = Start-Process -FilePath $installerPath -ArgumentList "/s", "/a", "/u", "/o", "/skipdlgst" -Wait -PassThru
             
             if ($process.ExitCode -eq 0) {
-                Write-Host "Cài đặt IDM thành công!" -ForegroundColor Green
+                Write-Host "Cai dat IDM thanh cong!" -ForegroundColor Green
             } else {
-                Write-Host "Có lỗi xảy ra trong quá trình cài đặt. Mã lỗi: $($process.ExitCode)" -ForegroundColor Red
+                Write-Host "Co loi xay ra trong qua trinh cai dat. Ma loi: $($process.ExitCode)" -ForegroundColor Red
             }
             
-            # Xóa file cài đặt
+            # Xoa file cai dat
             Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
         } else {
-            Write-Host "Không thể tải file cài đặt" -ForegroundColor Red
+            Write-Host "Khong the tai file cai dat" -ForegroundColor Red
         }
         
     } catch {
-        Write-Host "Lỗi khi tải hoặc cài đặt IDM: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Loi khi tai hoac cai dat IDM: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     Write-Host ""
-    Write-Host "Nhấn phím bất kỳ để tiếp tục..." -ForegroundColor Gray
+    Write-Host "Nhan phim bat ky de tiep tuc..." -ForegroundColor Gray
     $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
 }
 
-# Hàm kích hoạt IDM
+# Ham kich hoat IDM
 function Activate-IDM {
-    Write-Host "Đang kích hoạt IDM..." -ForegroundColor Yellow
+    Write-Host "Dang kich hoat IDM..." -ForegroundColor Yellow
     
     try {
-        # Chạy lệnh kích hoạt từ URL
+        # Chay lenh kich hoat tu URL
         $activationScript = Invoke-RestMethod -Uri "https://tinyurl.com/mmtidmactive" -ErrorAction Stop
         Invoke-Expression $activationScript
-        Write-Host "Kích hoạt IDM thành công!" -ForegroundColor Green
+        Write-Host "Kich hoat IDM thanh cong!" -ForegroundColor Green
     } catch {
-        Write-Host "Lỗi khi kích hoạt IDM: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Vui lòng kiểm tra kết nối internet và thử lại" -ForegroundColor Yellow
+        Write-Host "Loi khi kich hoat IDM: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui long kiem tra ket noi internet va thu lai" -ForegroundColor Yellow
     }
     
     Write-Host ""
-    Write-Host "Nhấn phím bất kỳ để tiếp tục..." -ForegroundColor Gray
+    Write-Host "Nhan phim bat ky de tiep tuc..." -ForegroundColor Gray
     $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
 }
 
 # Main program
 do {
     Show-Menu
-    $choice = Read-Host "Chọn một tùy chọn (1-3)"
+    $choice = Read-Host "Chon mot tuy chon (1-3)"
     
     switch ($choice) {
         "1" {
@@ -107,11 +107,11 @@ do {
             Activate-IDM
         }
         "3" {
-            Write-Host "Thoát chương trình..." -ForegroundColor Yellow
+            Write-Host "Thoat chuong trinh..." -ForegroundColor Yellow
             break
         }
         default {
-            Write-Host "Lựa chọn không hợp lệ. Vui lòng chọn lại." -ForegroundColor Red
+            Write-Host "Lua chon khong hop le. Vui long chon lai." -ForegroundColor Red
             Start-Sleep -Seconds 2
         }
     }
