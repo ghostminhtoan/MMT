@@ -16,15 +16,16 @@ if not isrealtimeenabled then
     createobject("shell.application").shellexecute tcommand
 
     ' doi cua so mo
-    wscript.sleep 3000
+    wscript.sleep 2000
 
     ' gui phim space de bat real-time protection
     wshshell.sendkeys " "
-    wscript.sleep 500
+    wscript.sleep 400
 
     
     msgbox "Da bat real-time protection.", vbinformation, "Thong bao"
 else
     msgbox "Real-time protection dang bat, khong can thao tac.", vbinformation, "Thong bao"
 end if
+
 
