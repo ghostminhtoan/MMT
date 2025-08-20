@@ -22,7 +22,7 @@ function Show-Menu {
     Write-Host "==========================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "1. Tai va cai dat IDM" -ForegroundColor Green
-    Write-Host "2. Kich hoat IDM" -ForegroundColor Green
+    Write-Host "2. Kich hoat IDM / Windows / Office" -ForegroundColor Green
     Write-Host "3. Thoat" -ForegroundColor Green
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Green
