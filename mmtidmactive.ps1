@@ -14,18 +14,13 @@ try {
     Write-Host "Không thể thay đổi font chữ. Tiếp tục với font mặc định..." -ForegroundColor Yellow
 }
 
-# Hàm hiển thị menu
-function Show-Menu {
+# Hàm hiển thị tiêu đề
+function Show-Header {
     Clear-Host
     Write-Host "==========================================" -ForegroundColor Green
-    Write-Host "           IDM MANAGER MENU" -ForegroundColor Green
+    Write-Host "           IDM MANAGER" -ForegroundColor Green
     Write-Host "==========================================" -ForegroundColor Green
     Write-Host ""
-    Write-Host "1. Tải và cài đặt IDM" -ForegroundColor Green
-    Write-Host "2. Kích hoạt IDM" -ForegroundColor Green
-    Write-Host "3. Thoát" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "==========================================" -ForegroundColor Green
 }
 
 # Hàm tải và cài đặt IDM
@@ -56,23 +51,23 @@ function Install-IDM {
             
             if ($process.ExitCode -eq 0) {
                 Write-Host "Cài đặt IDM thành công!" -ForegroundColor Green
+                return $true
             } else {
                 Write-Host "Có lỗi xảy ra trong quá trình cài đặt. Mã lỗi: $($process.ExitCode)" -ForegroundColor Red
+                return $false
             }
             
             # Xóa file cài đặt
             Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
         } else {
             Write-Host "Không thể tải file cài đặt" -ForegroundColor Red
+            return $false
         }
         
     } catch {
         Write-Host "Lỗi khi tải hoặc cài đặt IDM: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
     }
-    
-    Write-Host ""
-    Write-Host "Nhấn phím bất kỳ để tiếp tục..." -ForegroundColor Gray
-    $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
 }
 
 # Hàm kích hoạt IDM
@@ -84,35 +79,60 @@ function Activate-IDM {
         $activationScript = Invoke-RestMethod -Uri "https://tinyurl.com/mmtidmactive" -ErrorAction Stop
         Invoke-Expression $activationScript
         Write-Host "Kích hoạt IDM thành công!" -ForegroundColor Green
+        return $true
     } catch {
         Write-Host "Lỗi khi kích hoạt IDM: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Vui lòng kiểm tra kết nối internet và thử lại" -ForegroundColor Yellow
+        return $false
+    }
+}
+
+# Hàm hiển thị câu hỏi Yes/No
+function Get-YesNoChoice {
+    param(
+        [string]$Prompt,
+        [string]$YesText = "Yes",
+        [string]$NoText = "No"
+    )
+    
+    $choice = $null
+    while ($choice -notin @('Y', 'N')) {
+        Write-Host "$Prompt (Y/N) [Y: $YesText, N: $NoText]: " -ForegroundColor Cyan -NoNewline
+        $choice = (Read-Host).ToUpper()
+        
+        if ($choice -notin @('Y', 'N')) {
+            Write-Host "Lựa chọn không hợp lệ. Vui lòng chọn Y hoặc N." -ForegroundColor Red
+        }
     }
     
-    Write-Host ""
-    Write-Host "Nhấn phím bất kỳ để tiếp tục..." -ForegroundColor Gray
-    $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
+    return $choice
 }
 
 # Main program
-do {
-    Show-Menu
-    $choice = Read-Host "Chọn một tùy chọn (1-3)"
+Show-Header
+
+# Hỏi có muốn tải và cài đặt IDM không
+$installChoice = Get-YesNoChoice -Prompt "Bạn có muốn tải và cài đặt IDM?" -YesText "Cài đặt IDM" -NoText "Bỏ qua"
+
+if ($installChoice -eq 'Y') {
+    $installResult = Install-IDM
     
-    switch ($choice) {
-        "1" {
-            Install-IDM
+    if ($installResult) {
+        # Hỏi có muốn kích hoạt IDM không
+        $activateChoice = Get-YesNoChoice -Prompt "Bạn có muốn kích hoạt IDM?" -YesText "Kích hoạt" -NoText "Không kích hoạt"
+        
+        if ($activateChoice -eq 'Y') {
+            $activateResult = Activate-IDM
+        } else {
+            Write-Host "Đã bỏ qua kích hoạt IDM." -ForegroundColor Yellow
         }
-        "2" {
-            Activate-IDM
-        }
-        "3" {
-            Write-Host "Thoát chương trình..." -ForegroundColor Yellow
-            break
-        }
-        default {
-            Write-Host "Lựa chọn không hợp lệ. Vui lòng chọn lại." -ForegroundColor Red
-            Start-Sleep -Seconds 2
-        }
+    } else {
+        Write-Host "Quá trình cài đặt thất bại. Không thể tiếp tục kích hoạt." -ForegroundColor Red
     }
-} while ($choice -ne "3")
+} else {
+    Write-Host "Đã hủy cài đặt IDM." -ForegroundColor Yellow
+}
+
+Write-Host ""
+Write-Host "Quá trình hoàn tất. Nhấn phím bất kỳ để thoát..." -ForegroundColor Gray
+$Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown") | Out-Null
