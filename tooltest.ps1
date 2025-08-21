@@ -5,7 +5,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 }
 
 # URL file cần tải
-$url = "https://github.com/ghostminhtoan/MMT/raw/refs/heads/main/MMT_Tool_test.exe"
+$url = "https://github.com/ghostminhtoan/MMT/raw/refs/heads/main/T%E1%BB%91i%20%C6%B0u%20m%E1%BA%A1ng%20+%20directx%20+%20vcredist.exe"
 $fileName = [System.IO.Path]::GetFileName($url)
 $downloadPath = Join-Path $env:TEMP $fileName
 
