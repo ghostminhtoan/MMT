@@ -9,6 +9,22 @@ $url = "https://github.com/ghostminhtoan/MMT/raw/refs/heads/main/MMT_Tool_test.e
 $fileName = [System.IO.Path]::GetFileName($url)
 $downloadPath = Join-Path $env:TEMP $fileName
 
+# Tạo script xóa file độc lập
+$deleteScriptContent = @"
+Start-Sleep -Seconds 30
+try {
+    if (Test-Path "$downloadPath") {
+        Remove-Item -Path "$downloadPath" -Force -ErrorAction SilentlyContinue
+    }
+}
+catch {
+    # Không hiển thị thông báo lỗi
+}
+"@
+
+$deleteScriptPath = Join-Path $env:TEMP "delete_script.ps1"
+$deleteScriptContent | Out-File -FilePath $deleteScriptPath -Encoding UTF8
+
 # Tải file
 try {
     Write-Host "Đang tải file..."
@@ -25,23 +41,14 @@ if (Test-Path $downloadPath) {
     
     # Chạy file
     try {
-        Start-Process -FilePath $downloadPath -Wait
+        $process = Start-Process -FilePath $downloadPath -PassThru
     }
     catch {
         Write-Host "Lỗi khi chạy file: $($_.Exception.Message)"
     }
     
-    # Đợi 30 giây và xóa file (không hiển thị thông báo)
-    Start-Sleep -Seconds 30
-    
-    try {
-        if (Test-Path $downloadPath) {
-            Remove-Item -Path $downloadPath -Force
-        }
-    }
-    catch {
-        # Không hiển thị thông báo lỗi nếu có
-    }
+    # Khởi chạy tiến trình xóa file độc lập (ẩn)
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$deleteScriptPath`"" -WindowStyle Hidden
 }
 else {
     Write-Host "Không thể tải file từ URL đã cho"
