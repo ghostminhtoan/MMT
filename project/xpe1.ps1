@@ -327,33 +327,65 @@ $isoPath = $isoPath.Trim('"')
 
 if (!(Test-Path $isoPath)) {
     Write-Host "❌ Không tìm thấy file ISO tại $isoPath"
-    pause
-    exit
+    Pause
+    return
 }
 
 try {
     # Mount ISO
-    $isoDriveLetter = Mount-WindowsISO -ISOPath $isoPath
-    if (-not $isoDriveLetter) {
-        Write-Host "❌ Không thể mount ISO"
-        pause
-        exit
-    }
+    $iso = Mount-DiskImage -ImagePath $isoPath -PassThru -ErrorAction Stop
+    Start-Sleep -Seconds 2
 
-    # Áp dụng WinPE
-    if (Apply-WinPE -ISODrive $isoDriveLetter -TargetDrive "X") {
-        # Thiết lập boot environment
-        if (Setup-BootEnvironment -TargetDrive "X") {
-            Write-Host "🎉 Hoàn tất cài đặt WinPE vào ổ X:" -ForegroundColor Green
+    # Lấy danh sách volume trước và sau khi mount
+    $diskImage = Get-DiskImage -ImagePath $isoPath
+    $volumes = Get-Volume
+    $isoDriveLetter = $null
+
+    foreach ($v in $volumes) {
+        if ($v.DriveType -eq 'CD-ROM') {
+            $isoDriveLetter = $v.DriveLetter
+            break
         }
     }
 
-    # Dismount ISO
-    Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
-    
-} catch {
-    Write-Host "❌ Đã xảy ra lỗi: $($_.Exception.Message)" -ForegroundColor Red
-    Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
-}
+    if (-not $isoDriveLetter) {
+        Write-Host "❌ Không lấy được ký tự ổ đĩa ISO. Đảm bảo ISO đã mount đúng."
+        Dismount-DiskImage -ImagePath $isoPath
+        Pause
+        return
+    }
 
-pause
+    # Kiểm tra boot.wim
+    $bootWimPath = $isoDriveLetter + ":\sources\boot.wim"
+    if (!(Test-Path $bootWimPath)) {
+        Write-Host "❌ Không tìm thấy \\sources\\boot.wim trong ISO."
+        Dismount-DiskImage -ImagePath $isoPath
+        Pause
+        return
+    }
+
+    # Kiểm tra ổ X đã tồn tại chưa
+    $volX = Get-Volume -DriveLetter X -ErrorAction SilentlyContinue
+    if ($volX) {
+        # Format lại ổ X nếu cần
+        try {
+            Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false -ErrorAction Stop
+            Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
+            bcdboot X:\windows
+            bcdedit /set "{current}" bootmenupolicy legacy
+            Write-Host "✅ Hoàn tất cài đặt WinPE vào ổ X."
+        } catch {
+            Write-Host "❌ Lỗi khi cài đặt WinPE vào ổ X: $_"
+        }
+    } else {
+        Write-Host "⚠️ Không tìm thấy ổ X để cài WinPE. Bạn cần tạo hoặc gán ổ X trước."
+    }
+
+    # Dismount ISO
+    Dismount-DiskImage -ImagePath $isoPath
+}
+catch {
+    Write-Host "❌ Đã xảy ra lỗi: $_"
+    Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
+    Pause
+}
