@@ -256,7 +256,12 @@ if (-not (Check-XDriveAvailable)) {
     exit
 }
 
-
+# Hỏi người dùng có muốn tiếp tục không
+$Continue = Read-Host "Bạn có muốn tiếp tục? (Y/N)"
+if ($Continue -notmatch '^[Yy]') {
+    Write-Host "Thoát script..." -ForegroundColor Yellow
+    exit
+}
 
 # Kiểm tra nếu ổ X đã tồn tại thì bỏ qua bước tạo ổ
 $XDriveExists = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
