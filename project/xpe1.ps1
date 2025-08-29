@@ -19,8 +19,23 @@ function Check-XDriveAvailable {
     # Kiểm tra xem ổ X: đã được sử dụng chưa
     $XDrive = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
     if ($XDrive) {
-        Write-Host "❌ Ổ X: đã được sử dụng. Vui lòng xóa hoặc đổi ký tự ổ đĩa khác trước." -ForegroundColor Red
-        return $false
+        Write-Host "⚠️ Ổ X: đã được sử dụng. Bạn có muốn format và sử dụng lại ổ X: không?" -ForegroundColor Yellow
+        $choice = Read-Host "Chọn Y để tiếp tục (dữ liệu sẽ mất) hoặc N để hủy (Y/N)"
+        if ($choice -notmatch '^[Yy]') {
+            Write-Host "❌ Hủy thao tác..." -ForegroundColor Red
+            return $false
+        }
+        
+        # Format ổ X: để sử dụng lại
+        try {
+            Write-Host "Đang format ổ X:..." -ForegroundColor Yellow
+            Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel "WINPE" -Confirm:$false -Force
+            Write-Host "✅ Đã format lại ổ X: thành công" -ForegroundColor Green
+            return $true
+        } catch {
+            Write-Host "❌ Lỗi khi format ổ X: $($_.Exception.Message)" -ForegroundColor Red
+            return $false
+        }
     }
     return $true
 }
@@ -241,62 +256,70 @@ if (-not (Check-XDriveAvailable)) {
     exit
 }
 
-# Hỏi người dùng có muốn tạo ổ X: không
-$CreateXDrive = Read-Host "Bạn có muốn tạo ổ X:? (Y/N)"
-if ($CreateXDrive -notmatch '^[Yy]') {
+# Hỏi người dùng có muốn tiếp tục không
+$Continue = Read-Host "Bạn có muốn tiếp tục? (Y/N)"
+if ($Continue -notmatch '^[Yy]') {
     Write-Host "Thoát script..." -ForegroundColor Yellow
     exit
 }
 
-# Hiển thị danh sách ổ đĩa có thể thu nhỏ
-Write-Host "`nDanh sách ổ đĩa có thể thu nhỏ:" -ForegroundColor Yellow
-$AvailableDrives = Get-AvailableDrives
-$AvailableDrives | Format-Table -AutoSize
+# Kiểm tra nếu ổ X đã tồn tại thì bỏ qua bước tạo ổ
+$XDriveExists = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
+$SkipCreateXDrive = $false
 
-# Hỏi ổ đĩa nguồn để thu nhỏ
-do {
-    $SourceDrive = Read-Host "`nChọn ổ đĩa để thu nhỏ (nhập ký tự ổ đĩa, ví dụ: C)"
-    $SourceDrive = $SourceDrive.ToUpper()
-    
-    # Kiểm tra ổ đĩa có tồn tại và có thể thu nhỏ không
-    $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
-    if (-not $SelectedDrive) {
-        Write-Host "❌ Ổ đĩa không hợp lệ hoặc không thể thu nhỏ. Vui lòng chọn từ danh sách trên." -ForegroundColor Red
-        $IsValidDrive = $false
-    } else {
-        Write-Host "✅ Đã chọn ổ $SourceDrive - Dung lượng trống: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
-        $IsValidDrive = $true
-    }
-} while (-not $IsValidDrive)
+if ($XDriveExists) {
+    Write-Host "✅ Ổ X: đã tồn tại, bỏ qua bước tạo ổ đĩa" -ForegroundColor Green
+    $SkipCreateXDrive = $true
+} else {
+    # Hiển thị danh sách ổ đĩa có thể thu nhỏ
+    Write-Host "`nDanh sách ổ đĩa có thể thu nhỏ:" -ForegroundColor Yellow
+    $AvailableDrives = Get-AvailableDrives
+    $AvailableDrives | Format-Table -AutoSize
 
-# Hỏi dung lượng với đề nghị lớn hơn 6GB
-do {
-    $SizeInput = Read-Host "Nhập dung lượng cho ổ X: (GB - đề nghị lớn hơn 6GB)"
-    $SizeGB = 0
-    if ([int]::TryParse($SizeInput, [ref]$SizeGB)) {
-        # Parse thành công
-        if ($SizeGB -lt 6) {
-            Write-Host "⚠️  Đề nghị dung lượng lớn hơn 6GB!" -ForegroundColor Yellow
-        }
+    # Hỏi ổ đĩa nguồn để thu nhỏ
+    do {
+        $SourceDrive = Read-Host "`nChọn ổ đĩa để thu nhỏ (nhập ký tự ổ đĩa, ví dụ: C)"
+        $SourceDrive = $SourceDrive.ToUpper()
         
-        # Kiểm tra dung lượng có đủ không
+        # Kiểm tra ổ đĩa có tồn tại và có thể thu nhỏ không
         $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
-        if ($SizeGB -gt $SelectedDrive.FreeSpaceGB) {
-            Write-Host "❌ Dung lượng vượt quá khả dụng ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
+        if (-not $SelectedDrive) {
+            Write-Host "❌ Ổ đĩa không hợp lệ hoặc không thể thu nhỏ. Vui lòng chọn từ danh sách trên." -ForegroundColor Red
+            $IsValidDrive = $false
+        } else {
+            Write-Host "✅ Đã chọn ổ $SourceDrive - Dung lượng trống: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
+            $IsValidDrive = $true
+        }
+    } while (-not $IsValidDrive)
+
+    # Hỏi dung lượng với đề nghị lớn hơn 6GB
+    do {
+        $SizeInput = Read-Host "Nhập dung lượng cho ổ X: (GB - đề nghị lớn hơn 6GB)"
+        $SizeGB = 0
+        if ([int]::TryParse($SizeInput, [ref]$SizeGB)) {
+            # Parse thành công
+            if ($SizeGB -lt 6) {
+                Write-Host "⚠️  Đề nghị dung lượng lớn hơn 6GB!" -ForegroundColor Yellow
+            }
+            
+            # Kiểm tra dung lượng có đủ không
+            $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
+            if ($SizeGB -gt $SelectedDrive.FreeSpaceGB) {
+                Write-Host "❌ Dung lượng vượt quá khả dụng ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
+                $SizeGB = 0
+            }
+        } else {
+            Write-Host "⚠️  Vui lòng nhập số hợp lệ!" -ForegroundColor Red
             $SizeGB = 0
         }
-    } else {
-        Write-Host "⚠️  Vui lòng nhập số hợp lệ!" -ForegroundColor Red
-        $SizeGB = 0
+    } while ($SizeGB -lt 1)
+
+    # Tạo ổ X:
+    if (-not (Create-XDrive -SourceDrive $SourceDrive -SizeGB $SizeGB)) {
+        Write-Host "❌ Không thể tiếp tục do lỗi tạo ổ đĩa" -ForegroundColor Red
+        exit
     }
-} while ($SizeGB -lt 1)
-
-# Tạo ổ X:
-if (-not (Create-XDrive -SourceDrive $SourceDrive -SizeGB $SizeGB)) {
-    Write-Host "❌ Không thể tiếp tục do lỗi tạo ổ đĩa" -ForegroundColor Red
-    exit
 }
-
 
 # Bước 3: Hỏi đường dẫn file ISO
 $isoPath = Read-Host "Dán đường dẫn file ISO (ví dụ: D:\win10.iso)"
