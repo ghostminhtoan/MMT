@@ -1,5 +1,5 @@
 function Get-AvailableDrives {
-    # Lấy danh sách các ổ đĩa có thể thu nhỏ (ổ fixed, không phải removable)
+    # Lay danh sach cac o dia co the thu nho (o fixed, khong phai removable)
     $AvailableDrives = Get-Partition | Where-Object {
         $_.DriveLetter -and 
         $_.DriveLetter -ne '' -and
@@ -16,24 +16,24 @@ function Get-AvailableDrives {
 }
 
 function Check-XDriveAvailable {
-    # Kiểm tra xem ổ X: đã được sử dụng chưa
+    # Kiem tra xem o X: da duoc su dung chua
     $XDrive = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
     if ($XDrive) {
-        Write-Host "⚠️ Ổ X: đã được sử dụng. Bạn có muốn format và sử dụng lại ổ X: không?" -ForegroundColor Yellow
-        $choice = Read-Host "Chọn Y để tiếp tục (dữ liệu sẽ mất) hoặc N để hủy (Y/N)"
+        Write-Host "⚠️ O X: da duoc su dung. Ban co muon format va su dung lai o X: khong?" -ForegroundColor Yellow
+        $choice = Read-Host "Chon Y de tiep tuc (du lieu se mat) hoac N de huy (Y/N)"
         if ($choice -notmatch '^[Yy]') {
-            Write-Host "❌ Hủy thao tác..." -ForegroundColor Red
+            Write-Host "❌ Huy thao tac..." -ForegroundColor Red
             return $false
         }
         
-        # Format ổ X: để sử dụng lại
+        # Format o X: de su dung lai
         try {
-            Write-Host "Đang format ổ X:..." -ForegroundColor Yellow
+            Write-Host "Dang format o X:..." -ForegroundColor Yellow
             Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel "WINPE" -Confirm:$false -Force
-            Write-Host "✅ Đã format lại ổ X: thành công" -ForegroundColor Green
+            Write-Host "✅ Da format lai o X: thanh cong" -ForegroundColor Green
             return $true
         } catch {
-            Write-Host "❌ Lỗi khi format ổ X: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "❌ Loi khi format o X: $($_.Exception.Message)" -ForegroundColor Red
             return $false
         }
     }
@@ -46,51 +46,51 @@ function Create-XDrive {
         [int]$SizeGB
     )
     
-    # Chuyển đổi GB sang MB
+    # Chuyen doi GB sang MB
     $SizeMB = $SizeGB * 1024
     
-    # Kiểm tra ổ nguồn có tồn tại không
+    # Kiem tra o nguon co ton tai khong
     $SourcePartition = Get-Partition -DriveLetter $SourceDrive -ErrorAction SilentlyContinue
     if (-not $SourcePartition) {
-        Write-Host "Không tìm thấy ổ $SourceDrive" -ForegroundColor Red
+        Write-Host "Khong tim thay o $SourceDrive" -ForegroundColor Red
         return $false
     }
     
-    # Kiểm tra dung lượng khả dụng
+    # Kiem tra dung luong kha dung
     $SourceVolume = Get-Volume -DriveLetter $SourceDrive -ErrorAction SilentlyContinue
     if (-not $SourceVolume) {
-        Write-Host "Không thể lấy thông tin ổ $SourceDrive" -ForegroundColor Red
+        Write-Host "Khong the lay thong tin o $SourceDrive" -ForegroundColor Red
         return $false
     }
     
     $FreeSpaceGB = [math]::Round(($SourceVolume.SizeRemaining / 1GB), 2)
     
     if ($SizeGB -gt $FreeSpaceGB) {
-        Write-Host "Ổ $SourceDrive không đủ dung lượng. Dung lượng khả dụng: $FreeSpaceGB GB" -ForegroundColor Red
+        Write-Host "O $SourceDrive khong du dung luong. Dung luong kha dung: $FreeSpaceGB GB" -ForegroundColor Red
         return $false
     }
     
     try {
-        # Thu nhỏ ổ nguồn
-        Write-Host "Đang thu nhỏ ổ $SourceDrive với $SizeMB MB..." -ForegroundColor Yellow
+        # Thu nho o nguon
+        Write-Host "Dang thu nho o $SourceDrive voi $SizeMB MB..." -ForegroundColor Yellow
         
-        # Sử dụng Resize-Partition với tham số -Size để shrink
+        # Su dung Resize-Partition voi tham so -Size de shrink
         $NewSize = (Get-Partition -DriveLetter $SourceDrive).Size - ($SizeMB * 1MB)
         Resize-Partition -DriveLetter $SourceDrive -Size $NewSize -ErrorAction Stop
-        Write-Host "✅ Đã thu nhỏ ổ $SourceDrive thành công" -ForegroundColor Green
+        Write-Host "✅ Da thu nho o $SourceDrive thanh cong" -ForegroundColor Green
         
-        # Lấy thông tin disk và partition sau khi shrink
+        # Lay thong tin disk va partition sau khi shrink
         $DiskNumber = $SourcePartition.DiskNumber
         Start-Sleep -Seconds 3
         
-        # Lấy thông tin partition mới nhất (unallocated space)
+        # Lay thong tin partition moi nhat (unallocated space)
         $DiskPartitions = Get-Partition -DiskNumber $DiskNumber | Sort-Object PartitionNumber
         $LastPartition = $DiskPartitions | Sort-Object PartitionNumber -Descending | Select-Object -First 1
         
-        # Tạo phân vùng mới từ không gian chưa phân bổ
-        Write-Host "Đang tạo phân vùng mới..." -ForegroundColor Yellow
+        # Tao phan vung moi tu khong gian chua phan bo
+        Write-Host "Dang tao phan vung moi..." -ForegroundColor Yellow
         
-        # Sử dụng diskpart để tạo partition (đáng tin cậy hơn)
+        # Su dung diskpart de tao partition (dang tin cay hon)
         $DiskPartScript = @"
 select disk $DiskNumber
 create partition primary size=$SizeMB
@@ -102,20 +102,20 @@ exit
         $DiskPartScript | diskpart
         Start-Sleep -Seconds 5
         
-        # Kiểm tra xem ổ X: đã được tạo thành công chưa
+        # Kiem tra xem o X: da duoc tao thanh cong chua
         $XPartition = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
         if ($XPartition) {
-            Write-Host "✅ Đã tạo thành công ổ X: với $SizeGB GB từ ổ $SourceDrive" -ForegroundColor Green
+            Write-Host "✅ Da tao thanh cong o X: voi $SizeGB GB tu o $SourceDrive" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Không thể tạo ổ X: bằng diskpart" -ForegroundColor Red
+            Write-Host "❌ Khong the tao o X: bang diskpart" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Lỗi khi tạo ổ X: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "❌ Loi khi tao o X: $($_.Exception.Message)" -ForegroundColor Red
         
-        # Kiểm tra và khôi phục dung lượng nếu có phân vùng trống
+        # Kiem tra va khoi phuc dung luong neu co phan vung trong
         try {
             $Disk = Get-Disk -Number $SourcePartition.DiskNumber
             $Partitions = Get-Partition -DiskNumber $SourcePartition.DiskNumber | Sort-Object PartitionNumber
@@ -124,17 +124,17 @@ exit
                 $SupportedSize = Get-PartitionSupportedSize -InputObject $Partition -ErrorAction SilentlyContinue
                 if ($SupportedSize -and $Partition.Size -lt $SupportedSize.SizeMax) {
                     try {
-                        Write-Host "Đang khôi phục dung lượng cho partition $($Partition.PartitionNumber)..." -ForegroundColor Yellow
+                        Write-Host "Dang khoi phuc dung luong cho partition $($Partition.PartitionNumber)..." -ForegroundColor Yellow
                         Resize-Partition -InputObject $Partition -Size $SupportedSize.SizeMax -ErrorAction Stop
-                        Write-Host "✅ Đã khôi phục dung lượng thành công" -ForegroundColor Green
+                        Write-Host "✅ Da khoi phuc dung luong thanh cong" -ForegroundColor Green
                         break
                     } catch {
-                        Write-Host "❌ Không thể khôi phục dung lượng: $($_.Exception.Message)" -ForegroundColor Red
+                        Write-Host "❌ Khong the khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
                     }
                 }
             }
         } catch {
-            Write-Host "❌ Lỗi khi khôi phục dung lượng: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "❌ Loi khi khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
         }
         
         return $false
@@ -147,21 +147,21 @@ function Mount-WindowsISO {
     )
     
     if (-not (Test-Path $ISOPath)) {
-        Write-Host "❌ File ISO không tồn tại: $ISOPath" -ForegroundColor Red
+        Write-Host "❌ File ISO khong ton tai: $ISOPath" -ForegroundColor Red
         return $null
     }
     
     try {
-        Write-Host "Đang mount file ISO..." -ForegroundColor Yellow
+        Write-Host "Dang mount file ISO..." -ForegroundColor Yellow
         $MountResult = Mount-DiskImage -ImagePath $ISOPath -PassThru
         Start-Sleep -Seconds 3
         $DriveLetter = (Get-DiskImage -ImagePath $ISOPath | Get-Volume).DriveLetter
         
-        Write-Host "✅ Đã mount ISO thành công vào ổ $DriveLetter" -ForegroundColor Green
+        Write-Host "✅ Da mount ISO thanh cong vao o $DriveLetter" -ForegroundColor Green
         return $DriveLetter
         
     } catch {
-        Write-Host "❌ Lỗi khi mount ISO: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "❌ Loi khi mount ISO: $($_.Exception.Message)" -ForegroundColor Red
         return $null
     }
 }
@@ -175,34 +175,34 @@ function Apply-WinPE {
     $BootWimPath = "${ISODrive}:\sources\boot.wim"
     
     if (-not (Test-Path $BootWimPath)) {
-        Write-Host "❌ Không tìm thấy file boot.wim trong ISO" -ForegroundColor Red
+        Write-Host "❌ Khong tim thay file boot.wim trong ISO" -ForegroundColor Red
         return $false
     }
     
     try {
-        Write-Host "Đang áp dụng WinPE image..." -ForegroundColor Yellow
+        Write-Host "Dang ap dung WinPE image..." -ForegroundColor Yellow
         
-        # Kiểm tra xem ổ X: có tồn tại không
+        # Kiem tra xem o X: co ton tai khong
         if (-not (Test-Path "${TargetDrive}:\")) {
-            Write-Host "❌ Ổ $TargetDrive không tồn tại" -ForegroundColor Red
+            Write-Host "❌ O $TargetDrive khong ton tai" -ForegroundColor Red
             return $false
         }
         
-        # Áp dụng image WinPE (index 1) vào ổ X:
+        # Ap dung image WinPE (index 1) vao o X:
         $TargetPath = "${TargetDrive}:\"
-        Write-Host "Áp dụng boot.wim vào $TargetPath"
+        Write-Host "Ap dung boot.wim vao $TargetPath"
         dism /apply-image /imagefile:"$BootWimPath" /index:1 /applydir:"$TargetPath"
         
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Đã áp dụng WinPE thành công" -ForegroundColor Green
+            Write-Host "✅ Da ap dung WinPE thanh cong" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Lỗi khi áp dụng WinPE. Mã lỗi: $LASTEXITCODE" -ForegroundColor Red
+            Write-Host "❌ Loi khi ap dung WinPE. Ma loi: $LASTEXITCODE" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Lỗi khi áp dụng WinPE: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "❌ Loi khi ap dung WinPE: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -213,115 +213,115 @@ function Setup-BootEnvironment {
     )
     
     try {
-        Write-Host "Đang thiết lập môi trường khởi động..." -ForegroundColor Yellow
+        Write-Host "Dang thiet lap moi truong khoi dong..." -ForegroundColor Yellow
         
-        # Kiểm tra xem thư mục windows có tồn tại không
+        # Kiem tra xem thu muc windows co ton tai khong
         if (-not (Test-Path "${TargetDrive}:\windows")) {
-            Write-Host "❌ Thư mục windows không tồn tại trên ổ $TargetDrive" -ForegroundColor Red
+            Write-Host "❌ Thu muc windows khong ton tai tren o $TargetDrive" -ForegroundColor Red
             return $false
         }
         
-        # Sử dụng bcdboot để tạo boot files
+        # Su dung bcdboot de tao boot files
         $TargetPath = "${TargetDrive}:\windows"
         bcdboot $TargetPath
         
         if ($LASTEXITCODE -eq 0) {
-            # Thiết lập boot menu legacy
+            # Thiet lap boot menu legacy
             bcdedit /set {current} bootmenupolicy legacy
             
-            Write-Host "✅ Đã thiết lập môi trường khởi động thành công" -ForegroundColor Green
+            Write-Host "✅ Da thiet lap moi truong khoi dong thanh cong" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Lỗi khi thiết lập boot environment. Mã lỗi: $LASTEXITCODE" -ForegroundColor Red
+            Write-Host "❌ Loi khi thiet lap boot environment. Ma loi: $LASTEXITCODE" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Lỗi khi thiết lập boot environment: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "❌ Loi khi thiet lap boot environment: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
 
 # Main script execution
-Write-Host "=== SCRIPT TẠO Ổ ĐĨA WINPE ===`n" -ForegroundColor Cyan
+Write-Host "=== SCRIPT TAO O DIA WINPE ===`n" -ForegroundColor Cyan
 
-# Kiểm tra quyền administrator
+# Kiem tra quyen administrator
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "❌ Vui lòng chạy script với quyền Administrator!" -ForegroundColor Red
+    Write-Host "❌ Vui long chay script voi quyen Administrator!" -ForegroundColor Red
     exit
 }
 
-# Kiểm tra ổ X: có sẵn không
+# Kiem tra o X: co san khong
 if (-not (Check-XDriveAvailable)) {
     exit
 }
 
 
 
-# Kiểm tra nếu ổ X đã tồn tại thì bỏ qua bước tạo ổ
+# Kiem tra neu o X da ton tai thi bo qua buoc tao o
 $XDriveExists = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
 $SkipCreateXDrive = $false
 
 if ($XDriveExists) {
-    Write-Host "✅ Ổ X: đã tồn tại, bỏ qua bước tạo ổ đĩa" -ForegroundColor Green
+    Write-Host "✅ O X: da ton tai, bo qua buoc tao o dia" -ForegroundColor Green
     $SkipCreateXDrive = $true
 } else {
-    # Hiển thị danh sách ổ đĩa có thể thu nhỏ
-    Write-Host "`nDanh sách ổ đĩa có thể thu nhỏ:" -ForegroundColor Yellow
+    # Hien thi danh sach o dia co the thu nho
+    Write-Host "`nDanh sach o dia co the thu nho:" -ForegroundColor Yellow
     $AvailableDrives = Get-AvailableDrives
     $AvailableDrives | Format-Table -AutoSize
 
-    # Hỏi ổ đĩa nguồn để thu nhỏ
+    # Hoi o dia nguon de thu nho
     do {
-        $SourceDrive = Read-Host "`nChọn ổ đĩa để thu nhỏ (nhập ký tự ổ đĩa, ví dụ: C)"
+        $SourceDrive = Read-Host "`nChon o dia de thu nho (nhap ky tu o dia, vi du: C)"
         $SourceDrive = $SourceDrive.ToUpper()
         
-        # Kiểm tra ổ đĩa có tồn tại và có thể thu nhỏ không
+        # Kiem tra o dia co ton tai va co the thu nho khong
         $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
         if (-not $SelectedDrive) {
-            Write-Host "❌ Ổ đĩa không hợp lệ hoặc không thể thu nhỏ. Vui lòng chọn từ danh sách trên." -ForegroundColor Red
+            Write-Host "❌ O dia khong hop le hoac khong the thu nho. Vui long chon tu danh sach tren." -ForegroundColor Red
             $IsValidDrive = $false
         } else {
-            Write-Host "✅ Đã chọn ổ $SourceDrive - Dung lượng trống: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
+            Write-Host "✅ Da chon o $SourceDrive - Dung luong trong: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
             $IsValidDrive = $true
         }
     } while (-not $IsValidDrive)
 
-    # Hỏi dung lượng với đề nghị lớn hơn 6GB
+    # Hoi dung luong voi de nghi lon hon 6GB
     do {
-        $SizeInput = Read-Host "Nhập dung lượng cho ổ X: (GB - đề nghị lớn hơn 6GB)"
+        $SizeInput = Read-Host "Nhap dung luong cho o X: (GB - de nghi lon hon 6GB)"
         $SizeGB = 0
         if ([int]::TryParse($SizeInput, [ref]$SizeGB)) {
-            # Parse thành công
+            # Parse thanh cong
             if ($SizeGB -lt 6) {
-                Write-Host "⚠️  Đề nghị dung lượng lớn hơn 6GB!" -ForegroundColor Yellow
+                Write-Host "⚠️  De nghi dung luong lon hon 6GB!" -ForegroundColor Yellow
             }
             
-            # Kiểm tra dung lượng có đủ không
+            # Kiem tra dung luong co du khong
             $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
             if ($SizeGB -gt $SelectedDrive.FreeSpaceGB) {
-                Write-Host "❌ Dung lượng vượt quá khả dụng ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
+                Write-Host "❌ Dung luong vuot qua kha dung ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
                 $SizeGB = 0
             }
         } else {
-            Write-Host "⚠️  Vui lòng nhập số hợp lệ!" -ForegroundColor Red
+            Write-Host "⚠️  Vui long nhap so hop le!" -ForegroundColor Red
             $SizeGB = 0
         }
     } while ($SizeGB -lt 1)
 
-    # Tạo ổ X:
+    # Tao o X:
     if (-not (Create-XDrive -SourceDrive $SourceDrive -SizeGB $SizeGB)) {
-        Write-Host "❌ Không thể tiếp tục do lỗi tạo ổ đĩa" -ForegroundColor Red
+        Write-Host "❌ Khong the tiep tuc do loi tao o dia" -ForegroundColor Red
         exit
     }
 }
 
-# Bước 3: Hỏi đường dẫn file ISO
-$isoPath = Read-Host "Dán đường dẫn file ISO (ví dụ: D:\win10.iso)"
+# Buoc 3: Hoi duong dan file ISO
+$isoPath = Read-Host "Dan duong dan file ISO (vi du: D:\win10.iso)"
 $isoPath = $isoPath.Trim('"')
 
 if (!(Test-Path $isoPath)) {
-    Write-Host "❌ Không tìm thấy file ISO tại $isoPath"
+    Write-Host "❌ Khong tim thay file ISO tai $isoPath"
     Pause
     return
 }
@@ -331,7 +331,7 @@ try {
     $iso = Mount-DiskImage -ImagePath $isoPath -PassThru -ErrorAction Stop
     Start-Sleep -Seconds 2
 
-    # Lấy danh sách volume trước và sau khi mount
+    # Lay danh sach volume truoc va sau khi mount
     $diskImage = Get-DiskImage -ImagePath $isoPath
     $volumes = Get-Volume
     $isoDriveLetter = $null
@@ -344,43 +344,43 @@ try {
     }
 
     if (-not $isoDriveLetter) {
-        Write-Host "❌ Không lấy được ký tự ổ đĩa ISO. Đảm bảo ISO đã mount đúng."
+        Write-Host "❌ Khong lay duoc ky tu o dia ISO. Dam bao ISO da mount dung."
         Dismount-DiskImage -ImagePath $isoPath
         Pause
         return
     }
 
-    # Kiểm tra boot.wim
+    # Kiem tra boot.wim
     $bootWimPath = $isoDriveLetter + ":\sources\boot.wim"
     if (!(Test-Path $bootWimPath)) {
-        Write-Host "❌ Không tìm thấy \\sources\\boot.wim trong ISO."
+        Write-Host "❌ Khong tim thay \\sources\\boot.wim trong ISO."
         Dismount-DiskImage -ImagePath $isoPath
         Pause
         return
     }
 
-    # Kiểm tra ổ X đã tồn tại chưa
+    # Kiem tra o X da ton tai chua
     $volX = Get-Volume -DriveLetter X -ErrorAction SilentlyContinue
     if ($volX) {
-        # Format lại ổ X nếu cần
+        # Format lai o X neu can
         try {
             Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false -ErrorAction Stop
             Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
             bcdboot X:\windows
             bcdedit /set "{current}" bootmenupolicy legacy
-            Write-Host "✅ Hoàn tất cài đặt WinPE vào ổ X."
+            Write-Host "✅ Hoan tat cai dat WinPE vao o X."
         } catch {
-            Write-Host "❌ Lỗi khi cài đặt WinPE vào ổ X: $_"
+            Write-Host "❌ Loi khi cai dat WinPE vao o X: $_"
         }
     } else {
-        Write-Host "⚠️ Không tìm thấy ổ X để cài WinPE. Bạn cần tạo hoặc gán ổ X trước."
+        Write-Host "⚠️ Khong tim thay o X de cai WinPE. Ban can tao hoac gan o X truoc."
     }
 
     # Dismount ISO
     Dismount-DiskImage -ImagePath $isoPath
 }
 catch {
-    Write-Host "❌ Đã xảy ra lỗi: $_"
+    Write-Host "❌ Da xay ra loi: $_"
     Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
     Pause
 }
