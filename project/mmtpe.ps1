@@ -10,7 +10,7 @@ function Show-Menu {
     Write-Host "=============================================="
     Write-Host "1. Cài Windows PE vào ổ X"
     Write-Host "2. Xóa ổ X và lấy lại dung lượng"
-    Write-Host "3. Download iso Windows PE"
+    Write-Host "3. Download iso hard disk boot Windows PE"
     Write-Host "4. Thoát"
     Write-Host "=============================================="
 }
