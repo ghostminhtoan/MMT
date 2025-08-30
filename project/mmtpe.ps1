@@ -25,10 +25,20 @@ function Install-WinPE {
     Write-Host "`nĐang cài Windows PE vào ổ X..." -ForegroundColor Yellow
     Write-Host "Chạy lệnh: irm tinyurl.com/mmtpe002 | iex" -ForegroundColor Cyan
     
-    # Mở trình duyệt để download ISO Windows PE
-    Write-Host "`nĐang mở trình duyệt để tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
-    $urlISO = "https://drive.google.com/drive/folders/1vPpZmcAmLPY8lGnkgOZ6I2bOrQKrJt30?usp=drive_link"
     
+        # Mở trình duyệt để download Neat Download Manager
+    Write-Host "`nĐang mở trình duyệt để tải Neat Download Manager..." -ForegroundColor Yellow
+    $urlApp = "https://github.com/ghostminhtoan/private/releases/download/MMT/Neat.Download.Manager.exe"
+    
+    try {
+        Write-Host "Mở trình duyệt tải Neat Download Manager..." -ForegroundColor Cyan
+        Start-Process $urlApp
+        Write-Host "Đang tải" -ForegroundColor Red -BackgroundColor White
+    }
+    catch {
+        Write-Host "Lỗi mở trình duyệt App: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui lòng truy cập thủ công: $urlApp" -ForegroundColor Cyan
+    }
     
     # Mở trình duyệt để download MMT App
     Write-Host "`nĐang mở trình duyệt để tải MMT App..." -ForegroundColor Yellow
@@ -43,7 +53,13 @@ function Install-WinPE {
         Write-Host "Lỗi mở trình duyệt App: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Vui lòng truy cập thủ công: $urlApp" -ForegroundColor Cyan
     }
-
+    
+    
+    # Mở trình duyệt để download ISO Windows PE
+    Write-Host "`nĐang mở trình duyệt để tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
+    $urlISO = "https://drive.google.com/drive/folders/1vPpZmcAmLPY8lGnkgOZ6I2bOrQKrJt30?usp=drive_link"
+    
+    
         try {
         Write-Host "Mở trình duyệt tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
         Start-Process $urlISO
