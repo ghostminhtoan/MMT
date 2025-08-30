@@ -19,10 +19,10 @@ function Check-XDriveAvailable {
     # Kiem tra xem o X: da duoc su dung chua
     $XDrive = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
     if ($XDrive) {
-        Write-Host "⚠️ O X: da duoc su dung. Ban co muon format va su dung lai o X: khong?" -ForegroundColor Yellow
+        Write-Host " O X: da duoc su dung. Ban co muon format va su dung lai o X: khong?" -ForegroundColor Yellow
         $choice = Read-Host "Chon Y de tiep tuc (du lieu se mat) hoac N de huy (Y/N)"
         if ($choice -notmatch '^[Yy]') {
-            Write-Host "❌ Huy thao tac..." -ForegroundColor Red
+            Write-Host " Huy thao tac..." -ForegroundColor Red
             return $false
         }
         
@@ -30,10 +30,10 @@ function Check-XDriveAvailable {
         try {
             Write-Host "Dang format o X:..." -ForegroundColor Yellow
             Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel "WINPE" -Confirm:$false -Force
-            Write-Host "✅ Da format lai o X: thanh cong" -ForegroundColor Green
+            Write-Host " Da format lai o X: thanh cong" -ForegroundColor Green
             return $true
         } catch {
-            Write-Host "❌ Loi khi format o X: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host " Loi khi format o X: $($_.Exception.Message)" -ForegroundColor Red
             return $false
         }
     }
@@ -77,7 +77,7 @@ function Create-XDrive {
         # Su dung Resize-Partition voi tham so -Size de shrink
         $NewSize = (Get-Partition -DriveLetter $SourceDrive).Size - ($SizeMB * 1MB)
         Resize-Partition -DriveLetter $SourceDrive -Size $NewSize -ErrorAction Stop
-        Write-Host "✅ Da thu nho o $SourceDrive thanh cong" -ForegroundColor Green
+        Write-Host " Da thu nho o $SourceDrive thanh cong" -ForegroundColor Green
         
         # Lay thong tin disk va partition sau khi shrink
         $DiskNumber = $SourcePartition.DiskNumber
@@ -105,15 +105,15 @@ exit
         # Kiem tra xem o X: da duoc tao thanh cong chua
         $XPartition = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
         if ($XPartition) {
-            Write-Host "✅ Da tao thanh cong o X: voi $SizeGB GB tu o $SourceDrive" -ForegroundColor Green
+            Write-Host " Da tao thanh cong o X: voi $SizeGB GB tu o $SourceDrive" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Khong the tao o X: bang diskpart" -ForegroundColor Red
+            Write-Host " Khong the tao o X: bang diskpart" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Loi khi tao o X: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host " Loi khi tao o X: $($_.Exception.Message)" -ForegroundColor Red
         
         # Kiem tra va khoi phuc dung luong neu co phan vung trong
         try {
@@ -126,15 +126,15 @@ exit
                     try {
                         Write-Host "Dang khoi phuc dung luong cho partition $($Partition.PartitionNumber)..." -ForegroundColor Yellow
                         Resize-Partition -InputObject $Partition -Size $SupportedSize.SizeMax -ErrorAction Stop
-                        Write-Host "✅ Da khoi phuc dung luong thanh cong" -ForegroundColor Green
+                        Write-Host " Da khoi phuc dung luong thanh cong" -ForegroundColor Green
                         break
                     } catch {
-                        Write-Host "❌ Khong the khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
+                        Write-Host " Khong the khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
                     }
                 }
             }
         } catch {
-            Write-Host "❌ Loi khi khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host " Loi khi khoi phuc dung luong: $($_.Exception.Message)" -ForegroundColor Red
         }
         
         return $false
@@ -147,7 +147,7 @@ function Mount-WindowsISO {
     )
     
     if (-not (Test-Path $ISOPath)) {
-        Write-Host "❌ File ISO khong ton tai: $ISOPath" -ForegroundColor Red
+        Write-Host " File ISO khong ton tai: $ISOPath" -ForegroundColor Red
         return $null
     }
     
@@ -157,11 +157,11 @@ function Mount-WindowsISO {
         Start-Sleep -Seconds 3
         $DriveLetter = (Get-DiskImage -ImagePath $ISOPath | Get-Volume).DriveLetter
         
-        Write-Host "✅ Da mount ISO thanh cong vao o $DriveLetter" -ForegroundColor Green
+        Write-Host " Da mount ISO thanh cong vao o $DriveLetter" -ForegroundColor Green
         return $DriveLetter
         
     } catch {
-        Write-Host "❌ Loi khi mount ISO: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host " Loi khi mount ISO: $($_.Exception.Message)" -ForegroundColor Red
         return $null
     }
 }
@@ -175,7 +175,7 @@ function Apply-WinPE {
     $BootWimPath = "${ISODrive}:\sources\boot.wim"
     
     if (-not (Test-Path $BootWimPath)) {
-        Write-Host "❌ Khong tim thay file boot.wim trong ISO" -ForegroundColor Red
+        Write-Host " Khong tim thay file boot.wim trong ISO" -ForegroundColor Red
         return $false
     }
     
@@ -184,7 +184,7 @@ function Apply-WinPE {
         
         # Kiem tra xem o X: co ton tai khong
         if (-not (Test-Path "${TargetDrive}:\")) {
-            Write-Host "❌ O $TargetDrive khong ton tai" -ForegroundColor Red
+            Write-Host " O $TargetDrive khong ton tai" -ForegroundColor Red
             return $false
         }
         
@@ -194,15 +194,15 @@ function Apply-WinPE {
         dism /apply-image /imagefile:"$BootWimPath" /index:1 /applydir:"$TargetPath"
         
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "✅ Da ap dung WinPE thanh cong" -ForegroundColor Green
+            Write-Host " Da ap dung WinPE thanh cong" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Loi khi ap dung WinPE. Ma loi: $LASTEXITCODE" -ForegroundColor Red
+            Write-Host " Loi khi ap dung WinPE. Ma loi: $LASTEXITCODE" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Loi khi ap dung WinPE: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host " Loi khi ap dung WinPE: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -217,7 +217,7 @@ function Setup-BootEnvironment {
         
         # Kiem tra xem thu muc windows co ton tai khong
         if (-not (Test-Path "${TargetDrive}:\windows")) {
-            Write-Host "❌ Thu muc windows khong ton tai tren o $TargetDrive" -ForegroundColor Red
+            Write-Host " Thu muc windows khong ton tai tren o $TargetDrive" -ForegroundColor Red
             return $false
         }
         
@@ -229,15 +229,15 @@ function Setup-BootEnvironment {
             # Thiet lap boot menu legacy
             bcdedit /set {current} bootmenupolicy legacy
             
-            Write-Host "✅ Da thiet lap moi truong khoi dong thanh cong" -ForegroundColor Green
+            Write-Host " Da thiet lap moi truong khoi dong thanh cong" -ForegroundColor Green
             return $true
         } else {
-            Write-Host "❌ Loi khi thiet lap boot environment. Ma loi: $LASTEXITCODE" -ForegroundColor Red
+            Write-Host " Loi khi thiet lap boot environment. Ma loi: $LASTEXITCODE" -ForegroundColor Red
             return $false
         }
         
     } catch {
-        Write-Host "❌ Loi khi thiet lap boot environment: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host " Loi khi thiet lap boot environment: $($_.Exception.Message)" -ForegroundColor Red
         return $false
     }
 }
@@ -247,7 +247,7 @@ Write-Host "=== SCRIPT TAO O DIA WINPE ===`n" -ForegroundColor Cyan
 
 # Kiem tra quyen administrator
 if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "❌ Vui long chay script voi quyen Administrator!" -ForegroundColor Red
+    Write-Host " Vui long chay script voi quyen Administrator!" -ForegroundColor Red
     exit
 }
 
@@ -263,7 +263,7 @@ $XDriveExists = Get-Partition -DriveLetter X -ErrorAction SilentlyContinue
 $SkipCreateXDrive = $false
 
 if ($XDriveExists) {
-    Write-Host "✅ O X: da ton tai, bo qua buoc tao o dia" -ForegroundColor Green
+    Write-Host " O X: da ton tai, bo qua buoc tao o dia" -ForegroundColor Green
     $SkipCreateXDrive = $true
 } else {
     # Hien thi danh sach o dia co the thu nho
@@ -279,10 +279,10 @@ if ($XDriveExists) {
         # Kiem tra o dia co ton tai va co the thu nho khong
         $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
         if (-not $SelectedDrive) {
-            Write-Host "❌ O dia khong hop le hoac khong the thu nho. Vui long chon tu danh sach tren." -ForegroundColor Red
+            Write-Host " O dia khong hop le hoac khong the thu nho. Vui long chon tu danh sach tren." -ForegroundColor Red
             $IsValidDrive = $false
         } else {
-            Write-Host "✅ Da chon o $SourceDrive - Dung luong trong: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
+            Write-Host " Da chon o $SourceDrive - Dung luong trong: $($SelectedDrive.FreeSpaceGB) GB" -ForegroundColor Green
             $IsValidDrive = $true
         }
     } while (-not $IsValidDrive)
@@ -294,24 +294,24 @@ if ($XDriveExists) {
         if ([int]::TryParse($SizeInput, [ref]$SizeGB)) {
             # Parse thanh cong
             if ($SizeGB -lt 6) {
-                Write-Host "⚠️  De nghi dung luong lon hon 6GB!" -ForegroundColor Yellow
+                Write-Host "  De nghi dung luong lon hon 6GB!" -ForegroundColor Yellow
             }
             
             # Kiem tra dung luong co du khong
             $SelectedDrive = $AvailableDrives | Where-Object { $_.DriveLetter -eq $SourceDrive }
             if ($SizeGB -gt $SelectedDrive.FreeSpaceGB) {
-                Write-Host "❌ Dung luong vuot qua kha dung ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
+                Write-Host " Dung luong vuot qua kha dung ($($SelectedDrive.FreeSpaceGB) GB)" -ForegroundColor Red
                 $SizeGB = 0
             }
         } else {
-            Write-Host "⚠️  Vui long nhap so hop le!" -ForegroundColor Red
+            Write-Host "  Vui long nhap so hop le!" -ForegroundColor Red
             $SizeGB = 0
         }
     } while ($SizeGB -lt 1)
 
     # Tao o X:
     if (-not (Create-XDrive -SourceDrive $SourceDrive -SizeGB $SizeGB)) {
-        Write-Host "❌ Khong the tiep tuc do loi tao o dia" -ForegroundColor Red
+        Write-Host " Khong the tiep tuc do loi tao o dia" -ForegroundColor Red
         exit
     }
 }
@@ -321,7 +321,7 @@ $isoPath = Read-Host "Dan duong dan file ISO (vi du: D:\win10.iso)"
 $isoPath = $isoPath.Trim('"')
 
 if (!(Test-Path $isoPath)) {
-    Write-Host "❌ Khong tim thay file ISO tai $isoPath"
+    Write-Host " Khong tim thay file ISO tai $isoPath"
     Pause
     return
 }
@@ -344,7 +344,7 @@ try {
     }
 
     if (-not $isoDriveLetter) {
-        Write-Host "❌ Khong lay duoc ky tu o dia ISO. Dam bao ISO da mount dung."
+        Write-Host " Khong lay duoc ky tu o dia ISO. Dam bao ISO da mount dung."
         Dismount-DiskImage -ImagePath $isoPath
         Pause
         return
@@ -353,7 +353,7 @@ try {
     # Kiem tra boot.wim
     $bootWimPath = $isoDriveLetter + ":\sources\boot.wim"
     if (!(Test-Path $bootWimPath)) {
-        Write-Host "❌ Khong tim thay \\sources\\boot.wim trong ISO."
+        Write-Host " Khong tim thay \\sources\\boot.wim trong ISO."
         Dismount-DiskImage -ImagePath $isoPath
         Pause
         return
@@ -368,19 +368,20 @@ try {
             Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
             bcdboot X:\windows
             bcdedit /set "{current}" bootmenupolicy legacy
-            Write-Host "✅ Hoan tat cai dat WinPE vao o X."
+            Write-Host " Hoan tat cai dat WinPE vao o X."
         } catch {
-            Write-Host "❌ Loi khi cai dat WinPE vao o X: $_"
+            Write-Host " Loi khi cai dat WinPE vao o X: $_"
         }
     } else {
-        Write-Host "⚠️ Khong tim thay o X de cai WinPE. Ban can tao hoac gan o X truoc."
+        Write-Host " Khong tim thay o X de cai WinPE. Ban can tao hoac gan o X truoc."
     }
 
     # Dismount ISO
     Dismount-DiskImage -ImagePath $isoPath
 }
 catch {
-    Write-Host "❌ Da xay ra loi: $_"
+    Write-Host " Da xay ra loi: $_"
     Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
     Pause
 }
+
