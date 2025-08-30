@@ -29,15 +29,6 @@ function Install-WinPE {
     Write-Host "`nĐang mở trình duyệt để tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
     $urlISO = "https://drive.google.com/drive/folders/1vPpZmcAmLPY8lGnkgOZ6I2bOrQKrJt30?usp=drive_link"
     
-    try {
-        Write-Host "Mở trình duyệt tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
-        Start-Process $urlISO
-        Write-Host "HÃY TẢI FILE ISO HARD DISK BOOT WINDOWS PE" -ForegroundColor Red -BackgroundColor White
-    }
-    catch {
-        Write-Host "Lỗi mở trình duyệt ISO: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Vui lòng truy cập thủ công: $urlISO" -ForegroundColor Cyan
-    }
     
     # Mở trình duyệt để download MMT App
     Write-Host "`nĐang mở trình duyệt để tải MMT App..." -ForegroundColor Yellow
@@ -51,6 +42,16 @@ function Install-WinPE {
     catch {
         Write-Host "Lỗi mở trình duyệt App: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Vui lòng truy cập thủ công: $urlApp" -ForegroundColor Cyan
+    }
+
+        try {
+        Write-Host "Mở trình duyệt tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
+        Start-Process $urlISO
+        Write-Host "HÃY TẢI FILE ISO HARD DISK BOOT WINDOWS PE" -ForegroundColor Red -BackgroundColor White
+    }
+    catch {
+        Write-Host "Lỗi mở trình duyệt ISO: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui lòng truy cập thủ công: $urlISO" -ForegroundColor Cyan
     }
     
     Write-Host "`nCác trình duyệt đã được mở. Vui lòng tải file cần thiết." -ForegroundColor Green
