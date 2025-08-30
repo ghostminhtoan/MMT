@@ -13,7 +13,7 @@ try {
 function Show-Menu {
     Clear-Host
     Write-Host "=============================================="
-    Write-Host "           MMT PE TOOL MENU" -ForegroundColor Yellow
+    Write-Host "           MMTPE TOOL" -ForegroundColor Yellow
     Write-Host "=============================================="
     Write-Host "1. Cài Windows PE vào ổ X (Tự động mở link download)"
     Write-Host "2. Xóa ổ X và lấy lại dung lượng"
@@ -26,25 +26,25 @@ function Install-WinPE {
     Write-Host "Chạy lệnh: irm tinyurl.com/mmtpe002 | iex" -ForegroundColor Cyan
     
     # Mở trình duyệt để download ISO Windows PE
-    Write-Host "`nĐang mở trình duyệt để tải Windows PE ISO..." -ForegroundColor Yellow
+    Write-Host "`nĐang mở trình duyệt để tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
     $urlISO = "https://drive.google.com/drive/folders/1vPpZmcAmLPY8lGnkgOZ6I2bOrQKrJt30?usp=drive_link"
     
     try {
-        Write-Host "Mở trình duyệt tải Windows PE ISO..." -ForegroundColor Cyan
+        Write-Host "Mở trình duyệt tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
         Start-Process $urlISO
-        Write-Host "HÃY TẢI FILE ISO HARD DISK BOOT" -ForegroundColor Red -BackgroundColor White
+        Write-Host "HÃY TẢI FILE ISO HARD DISK BOOT WINDOWS PE" -ForegroundColor Red -BackgroundColor White
     }
     catch {
         Write-Host "Lỗi mở trình duyệt ISO: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "Vui lòng truy cập thủ công: $urlISO" -ForegroundColor Cyan
     }
     
-    # Mở trình duyệt để download App
-    Write-Host "`nĐang mở trình duyệt để tải ứng dụng..." -ForegroundColor Yellow
+    # Mở trình duyệt để download MMT App
+    Write-Host "`nĐang mở trình duyệt để tải MMT App..." -ForegroundColor Yellow
     $urlApp = "https://drive.google.com/drive/folders/1tUBZCVbzxmmsJIbAIuUVk2aJ_LXVRLui?usp=drive_link"
     
     try {
-        Write-Host "Mở trình duyệt tải ứng dụng..." -ForegroundColor Cyan
+        Write-Host "Mở trình duyệt tải MMT App..." -ForegroundColor Cyan
         Start-Process $urlApp
         Write-Host "HÃY TẢI ỨNG DỤNG CẦN THIẾT" -ForegroundColor Red -BackgroundColor White
     }
