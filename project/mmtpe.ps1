@@ -7,7 +7,7 @@ $shell.WindowTitle = "MMT PE Tool"
 try {
     $shell.Font = New-Object System.Management.Automation.Host.Font("Consolas", 28, [System.Windows.FontWeight]::Normal, $false)
 } catch {
-    Write-Host "Không thể thay đổi font, sử dụng font mặc định" -ForegroundColor Yellow
+    Write-Host "Khong the thay doi font, su dung font mac dinh" -ForegroundColor Yellow
 }
 
 function Show-Menu {
@@ -15,112 +15,112 @@ function Show-Menu {
     Write-Host "=============================================="
     Write-Host "           MMTPE TOOL" -ForegroundColor Yellow
     Write-Host "=============================================="
-    Write-Host "1. Cài Windows PE vào ổ X (Tự động mở link download)"
-    Write-Host "2. Xóa ổ X và lấy lại dung lượng"
-    Write-Host "3. Thoát"
+    Write-Host "1. Cai Windows PE vao o X (Tu dong mo link download)"
+    Write-Host "2. Xoa o X va lay lai dung luong"
+    Write-Host "3. Thoat"
     Write-Host "=============================================="
 }
 
 function Install-WinPE {
-    Write-Host "`nĐang cài Windows PE vào ổ X..." -ForegroundColor Yellow
-    Write-Host "Chạy lệnh: irm tinyurl.com/mmtpe002 | iex" -ForegroundColor Cyan
+    Write-Host "`nDang cai Windows PE vao o X..." -ForegroundColor Yellow
+    Write-Host "Chay lenh: irm tinyurl.com/mmtpe002 | iex" -ForegroundColor Cyan
     
     
-        # Mở trình duyệt để download Neat Download Manager
-    Write-Host "`nĐang mở trình duyệt để tải Neat Download Manager..." -ForegroundColor Yellow
+        # Mo trinh duyet de download Neat Download Manager
+    Write-Host "`nDang mo trinh duyet de tai Neat Download Manager..." -ForegroundColor Yellow
     $urlApp = "https://github.com/ghostminhtoan/private/releases/download/MMT/Neat.Download.Manager.exe"
     
     try {
-        Write-Host "Mở trình duyệt tải Neat Download Manager..." -ForegroundColor Cyan
+        Write-Host "Mo trinh duyet tai Neat Download Manager..." -ForegroundColor Cyan
         Start-Process $urlApp
-        Write-Host "Đang tải" -ForegroundColor Red -BackgroundColor White
+        Write-Host "Dang tai" -ForegroundColor Red -BackgroundColor White
     }
     catch {
-        Write-Host "Lỗi mở trình duyệt App: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Vui lòng truy cập thủ công: $urlApp" -ForegroundColor Cyan
+        Write-Host "Loi mo trinh duyet App: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui long truy cap thu cong: $urlApp" -ForegroundColor Cyan
     }
     
-    # Mở trình duyệt để download MMT App
-    Write-Host "`nĐang mở trình duyệt để tải MMT App..." -ForegroundColor Yellow
+    # Mo trinh duyet de download MMT App
+    Write-Host "`nDang mo trinh duyet de tai MMT App..." -ForegroundColor Yellow
     $urlApp = "https://drive.google.com/drive/folders/1tUBZCVbzxmmsJIbAIuUVk2aJ_LXVRLui?usp=drive_link"
     
     try {
-        Write-Host "Mở trình duyệt tải MMT App..." -ForegroundColor Cyan
+        Write-Host "Mo trinh duyet tai MMT App..." -ForegroundColor Cyan
         Start-Process $urlApp
-        Write-Host "HÃY TẢI ỨNG DỤNG CẦN THIẾT" -ForegroundColor Red -BackgroundColor White
+        Write-Host "HAY TAI UNG DUNG CAN THIET" -ForegroundColor Red -BackgroundColor White
     }
     catch {
-        Write-Host "Lỗi mở trình duyệt App: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Vui lòng truy cập thủ công: $urlApp" -ForegroundColor Cyan
+        Write-Host "Loi mo trinh duyet App: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui long truy cap thu cong: $urlApp" -ForegroundColor Cyan
     }
     
     
-    # Mở trình duyệt để download ISO Windows PE
-    Write-Host "`nĐang mở trình duyệt để tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
+    # Mo trinh duyet de download ISO Windows PE
+    Write-Host "`nDang mo trinh duyet de tai ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Yellow
     $urlISO = "https://drive.google.com/drive/folders/1vPpZmcAmLPY8lGnkgOZ6I2bOrQKrJt30?usp=drive_link"
     
     
         try {
-        Write-Host "Mở trình duyệt tải ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
+        Write-Host "Mo trinh duyet tai ISO HARD DISK BOOT WINDOWS PE..." -ForegroundColor Cyan
         Start-Process $urlISO
-        Write-Host "HÃY TẢI FILE ISO HARD DISK BOOT WINDOWS PE" -ForegroundColor Red -BackgroundColor White
+        Write-Host "HAY TAI FILE ISO HARD DISK BOOT WINDOWS PE" -ForegroundColor Red -BackgroundColor White
     }
     catch {
-        Write-Host "Lỗi mở trình duyệt ISO: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Vui lòng truy cập thủ công: $urlISO" -ForegroundColor Cyan
+        Write-Host "Loi mo trinh duyet ISO: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Vui long truy cap thu cong: $urlISO" -ForegroundColor Cyan
     }
     
-    Write-Host "`nCác trình duyệt đã được mở. Vui lòng tải file cần thiết." -ForegroundColor Green
-    Write-Host "Sau khi tải xong, nhấn phím bất kỳ để tiếp tục cài đặt Windows PE..." -ForegroundColor Yellow
+    Write-Host "`nCac trinh duyet da duoc mo. Vui long tai file can thiet." -ForegroundColor Green
+    Write-Host "Sau khi tai xong, nhan phim bat ky de tiep tuc cai dat Windows PE..." -ForegroundColor Yellow
     Pause
     
-    # Chạy lệnh cài đặt Windows PE
-    Write-Host "`nĐang chạy lệnh cài đặt Windows PE..." -ForegroundColor Yellow
+    # Chay lenh cai dat Windows PE
+    Write-Host "`nDang chay lenh cai dat Windows PE..." -ForegroundColor Yellow
     try {
         Invoke-RestMethod -Uri "https://tinyurl.com/mmtpe002" -Method Get | Invoke-Expression
-        Write-Host "Cài đặt thành công!" -ForegroundColor Green
+        Write-Host "Cai dat thanh cong!" -ForegroundColor Green
     }
     catch {
-        Write-Host "Lỗi trong quá trình cài đặt: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Loi trong qua trinh cai dat: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     Pause
 }
 
 function Remove-DriveX {
-    Write-Host "`nĐang xóa ổ X và lấy lại dung lượng..." -ForegroundColor Yellow
-    Write-Host "Chạy lệnh: irm tinyurl.com/mmtpe003 | iex" -ForegroundColor Cyan
+    Write-Host "`nDang xoa o X va lay lai dung luong..." -ForegroundColor Yellow
+    Write-Host "Chay lenh: irm tinyurl.com/mmtpe003 | iex" -ForegroundColor Cyan
     
     try {
         Invoke-RestMethod -Uri "https://tinyurl.com/mmtpe003" -Method Get | Invoke-Expression
-        Write-Host "Xóa ổ X thành công!" -ForegroundColor Green
+        Write-Host "Xoa o X thanh cong!" -ForegroundColor Green
     }
     catch {
-        Write-Host "Lỗi trong quá trình xóa: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Loi trong qua trinh xoa: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     Pause
 }
 
 function Pause {
-    Write-Host "`nNhấn phím bất kỳ để tiếp tục..." -ForegroundColor White
+    Write-Host "`nNhan phim bat ky de tiep tuc..." -ForegroundColor White
     $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 }
 
 # Main program
 do {
     Show-Menu
-    $choice = Read-Host "`nChọn option (1-3)"
+    $choice = Read-Host "`nChon option (1-3)"
     
     switch ($choice) {
         "1" { Install-WinPE }
         "2" { Remove-DriveX }
         "3" { 
-            Write-Host "Thoát chương trình..." -ForegroundColor Yellow
+            Write-Host "Thoat chuong trinh..." -ForegroundColor Yellow
             break 
         }
         default {
-            Write-Host "Lựa chọn không hợp lệ! Vui lòng chọn từ 1-3." -ForegroundColor Red
+            Write-Host "Lua chon khong hop le! Vui long chon tu 1-3." -ForegroundColor Red
             Start-Sleep -Seconds 2
         }
     }
