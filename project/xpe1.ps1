@@ -366,8 +366,8 @@ try {
         try {
             Format-Volume -DriveLetter X -FileSystem NTFS -NewFileSystemLabel 'zX winPE' -Confirm:$false -ErrorAction Stop
             Dism /Apply-Image /ImageFile:$bootWimPath /Index:1 /ApplyDir:"X:\"
-            bcdboot X:\windows
-            bcdedit /set "{current}" bootmenupolicy legacy
+C:\Windows\sysnative\bcdboot.exe x:\windows
+C:\Windows\sysnative\bcdedit.exe /set "{current}" bootmenupolicy legacy
             Write-Host " Hoan tat cai dat WinPE vao o X."
         } catch {
             Write-Host " Loi khi cai dat WinPE vao o X: $_"
@@ -384,4 +384,5 @@ catch {
     Dismount-DiskImage -ImagePath $isoPath -ErrorAction SilentlyContinue
     Pause
 }
+
 
