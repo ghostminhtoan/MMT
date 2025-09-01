@@ -1,19 +1,19 @@
-# Bước 1: Hiển thị ổ đĩa
-Write-Host "`n--- DANH SÁCH Ổ ĐĨA HIỆN TẠI ---"
+# Buoc 1: Hien thi o dia
+Write-Host "`n--- DANH SACH O DIA HIEN TAI ---"
 $volumes = Get-Volume
 foreach ($v in $volumes) {
     if ($v.DriveLetter) {
-        Write-Host "Ký tự ổ đĩa: $($v.DriveLetter) - Tên hệ thống tệp: $($v.FileSystemLabel) - Không gian còn lại: $($v.SizeRemaining) - Tổng dung lượng: $($v.Size)"
+        Write-Host "Ky tu o dia: $($v.DriveLetter) - Ten he thong tep: $($v.FileSystemLabel) - Khong gian con lai: $($v.SizeRemaining) - Tong dung luong: $($v.Size)"
     }
 }
 
-# Bước 2: Kiểm tra và xóa ổ X (nếu có)
+# Buoc 2: Kiem tra va xoa o X (neu co)
 $driveLetterToRemove = "X"
 $volumeToRemove = Get-Volume -DriveLetter $driveLetterToRemove -ErrorAction SilentlyContinue
 
 if ($volumeToRemove) {
-    Write-Host "`n--- XỬ LÝ Ổ ĐĨA $driveLetterToRemove ---"
-    Write-Host "Bạn có chắc chắn muốn xóa ổ $driveLetterToRemove không? DỮ LIỆU SẼ MẤT HOÀN TOÀN! (Y/N)"
+    Write-Host "`n--- XU LY O DIA $driveLetterToRemove ---"
+    Write-Host "Ban co chac chan muon xoa o $driveLetterToRemove khong? DU LIEU SE MAT HOAN TOAN! (Y/N)"
     $confirm = Read-Host
     if ($confirm -eq "Y") {
         $partitionList = Get-Partition
@@ -44,43 +44,43 @@ if ($volumeToRemove) {
             $diskNumber = $disk.Number
 
             Remove-Partition -DiskNumber $diskNumber -PartitionNumber $partitionNumber -Confirm:$false
-            Write-Host "✅ Đã xóa ổ đĩa $driveLetterToRemove. Không gian trống đã sẵn sàng.`n"
+            Write-Host "Da xoa o dia $driveLetterToRemove. Khong gian trong da san sang.`n"
         } else {
-            Write-Host "❌ Không tìm thấy phân vùng hoặc ổ đĩa tương ứng."
+            Write-Host "Khong tim thay phan vung hoac o dia tuong ung."
         }
     } else {
-        Write-Host "❌ Hủy thao tác xóa ổ $driveLetterToRemove."
+        Write-Host "Huy thao tac xoa o $driveLetterToRemove."
     }
 } else {
-    Write-Host "`nℹ️ Không tìm thấy ổ đĩa $driveLetterToRemove. Tiếp tục với việc mở rộng ổ đĩa..."
+    Write-Host "`nKhong tim thay o dia $driveLetterToRemove. Tiep tuc voi viec mo rong o dia..."
 }
 
-# Bước 3: Chọn ổ cần mở rộng
-Write-Host "`n--- CHỌN Ổ ĐĨA ĐỂ MỞ RỘNG ---"
+# Buoc 3: Chon o can mo rong
+Write-Host "`n--- CHON O DIA DE MO RONG ---"
 $volumes = Get-Volume | Where-Object { $_.DriveLetter }
 foreach ($v in $volumes) {
-    Write-Host "Ký tự ổ đĩa: $($v.DriveLetter) - Tên hệ thống tệp: $($v.FileSystemLabel) - Không gian còn lại: $($v.SizeRemaining) - Tổng dung lượng: $($v.Size)"
+    Write-Host "Ky tu o dia: $($v.DriveLetter) - Ten he thong tep: $($v.FileSystemLabel) - Khong gian con lai: $($v.SizeRemaining) - Tong dung luong: $($v.Size)"
 }
 
-$targetDriveLetter = Read-Host "`nNhập ký tự ổ đĩa bạn muốn mở rộng (VD: C)"
+$targetDriveLetter = Read-Host "`nNhap ky tu o dia ban muon mo rong (VD: C)"
 $partitionToExtend = Get-Partition -DriveLetter $targetDriveLetter -ErrorAction SilentlyContinue
 
 if (!$partitionToExtend) {
-    Write-Host "❌ Không tìm thấy ổ $targetDriveLetter. Thoát."
-    Write-Host "Nhấn phím bất kỳ để thoát..."
+    Write-Host "Khong tim thay o $targetDriveLetter. Thoat."
+    Write-Host "Nhan phim bat ky de thoat..."
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     exit
 }
 
-# Bước 4: Resize (extend)
+# Buoc 4: Resize (extend)
 try {
-    Write-Host "`n⏳ Đang mở rộng ổ $targetDriveLetter..."
+    Write-Host "`nDang mo rong o $targetDriveLetter..."
     $maxSize = (Get-PartitionSupportedSize -DriveLetter $targetDriveLetter).SizeMax
     Resize-Partition -DriveLetter $targetDriveLetter -Size $maxSize
-    Write-Host "✅ Đã mở rộng ổ $targetDriveLetter thành công!"
+    Write-Host "Da mo rong o $targetDriveLetter thanh cong!"
 } catch {
-    Write-Host "`n❌ Không thể mở rộng ổ đĩa. Lỗi: $_"
+    Write-Host "`nKhong the mo rong o dia. Loi: $_"
 }
 
-Write-Host "`nNhấn phím bất kỳ để thoát..."
+Write-Host "`nNhan phim bat ky de thoat..."
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
