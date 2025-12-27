@@ -1,7 +1,7 @@
 # Đường dẫn thư mục
-$TempFolder = "$env:LOCALAPPDATA\Temp\MMTPC"
-$ExePath = Join-Path $TempFolder "MMT.IDM.exe"
-$Url = "https://github.com/ghostminhtoan/private/releases/download/MMT/MMT.IDM.exe"
+$TempFolder = "$env:LOCALAPPDATA\GMTPC\GMTPC Tools"
+$ExePath = Join-Path $TempFolder "GMTPC.Tool.exe"
+$Url = https://github.com/ghostminhtoan/private/releases/download/MMT/GMTPC.Tool.exe"
 
 # 1. Tạo thư mục MMTPC
 if (!(Test-Path $TempFolder)) {
