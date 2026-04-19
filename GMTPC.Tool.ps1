@@ -25,3 +25,5 @@ Start-Process -FilePath $ExePath -Wait
 # 5. Xóa thư mục dọn dẹp
 Write-Host "Dang don dep..."
 Remove-Item -Path $TempFolder -Recurse -Force
+
+pause
