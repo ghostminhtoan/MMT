@@ -4,7 +4,7 @@ $ProgressPreference = 'SilentlyContinue'
 # Đường dẫn thư mục
 $TempFolder = "$env:LOCALAPPDATA\GMTPC\GMTPC Tools"
 $ExePath = Join-Path $TempFolder "GMTPC.Tool.exe"
-$Url = "https://raw.githubusercontent.com/ghostminhtoan/GMTPC.Tool/refs/heads/main/bin/Release/net48/GMTPC.Tool.exe"
+$Url = "https://github.com/ghostminhtoan/GMTPC.Tool/raw/refs/heads/main/bin/Release/net48/GMTPC.Tool.exe"
 
 # 2. Tạo thư mục: Dùng -Force nó sẽ tự động tạo nếu chưa có, không cần dùng Test-Path nữa
 Write-Host "Dang chuan bi moi truong..."
