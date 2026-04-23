@@ -35,4 +35,4 @@ catch {
     exit 1
 }
 
-pause
+exit
