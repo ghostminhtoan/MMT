@@ -21,9 +21,8 @@ try {
     New-Item -ItemType Directory -Path $BaseFolder -Force | Out-Null
 
     # 4. Thêm Windows Defender exclusion cho thư mục GMTPC
-    Write-Host "Dang them Windows Defender exclusion..." -ForegroundColor Cyan
-    Add-MpPreference -ExclusionPath $BaseFolder -ErrorAction Stop
-    Write-Host "Da them exclusion: $BaseFolder" -ForegroundColor Green
+       Add-MpPreference -ExclusionPath $BaseFolder -ErrorAction Stop
+    
 
     # 5. Tạo thư mục con chứa tool
     New-Item -ItemType Directory -Path $TempFolder -Force | Out-Null
@@ -43,6 +42,12 @@ try {
     # 8. Dọn dẹp (chỉ xóa file exe, giữ lại thư mục)
     Write-Host "Dang don dep..." -ForegroundColor Cyan
     Remove-Item -Path $ExePath -Force -ErrorAction SilentlyContinue
+
+
+    # 9. Xóa Windows Defender exclusion cho thư mục GMTPC
+       Remove-MpPreference -ExclusionPath $BaseFolder -ErrorAction Stop
+    
+    
     
     Write-Host "Hoan tat!" -ForegroundColor Green
 }
