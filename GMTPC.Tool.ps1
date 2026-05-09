@@ -1,13 +1,6 @@
 # 1. Tắt thanh tiến trình
 $ProgressPreference = 'SilentlyContinue'
 
-# 2. Kiểm tra quyền Administrator
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "Yeu cau quyen Administrator de them Windows Defender exclusion." -ForegroundColor Red
-    Write-Host "Vui long chay PowerShell voi 'Run as Administrator'." -ForegroundColor Yellow
-    pause
-    exit 1
-}
 
 # Đường dẫn
 $BaseFolder = "$env:LOCALAPPDATA\GMTPC"
@@ -16,13 +9,7 @@ $ExePath = Join-Path $TempFolder "GMTPC.Tool.exe"
 $Url = "https://github.com/ghostminhtoan/GMTPC.Tool/raw/refs/heads/main/GMTPC.Tool.exe"
 
 try {
-    # 3. Tạo thư mục cơ sở trước khi thêm exclusion
-    Write-Host "Dang chuan bi moi truong..." -ForegroundColor Cyan
-    New-Item -ItemType Directory -Path $BaseFolder -Force | Out-Null
 
-    # 4. Thêm Windows Defender exclusion cho thư mục GMTPC
-       Add-MpPreference -ExclusionPath $BaseFolder -ErrorAction Stop
-    
 
     # 5. Tạo thư mục con chứa tool
     New-Item -ItemType Directory -Path $TempFolder -Force | Out-Null
@@ -43,10 +30,7 @@ try {
     Write-Host "Dang don dep..." -ForegroundColor Cyan
     Remove-Item -Path $ExePath -Force -ErrorAction SilentlyContinue
 
-
-    # 9. Xóa Windows Defender exclusion cho thư mục GMTPC
-       Remove-MpPreference -ExclusionPath $BaseFolder -ErrorAction Stop
-    
+   
     
     
     Write-Host "Hoan tat!" -ForegroundColor Green
